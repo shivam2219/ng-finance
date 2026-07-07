@@ -2282,20 +2282,36 @@
     <div class="modal-title">💰 Add Commission Entry</div>
     <div class="comm-form-grid">
       <div class="comm-field"><label>Client Name</label><input type="text" id="commClient" placeholder="e.g. Ramesh Shah"></div>
-      <div class="comm-field"><label>Insurer</label>
+      <div class="comm-field"><label>Insurer / Source</label>
         <select id="commInsurer">
-          <option value="">Select Insurer</option>
+          <option value="">Select Insurer / Source</option>
           <option>LIC</option><option>Star Health</option><option>HDFC Ergo</option>
           <option>ICICI Lombard</option><option>New India</option><option>Oriental</option>
-          <option>Bajaj Allianz</option><option>Tata AIA</option><option>SBI Life</option><option>Other</option>
+          <option>Bajaj Allianz</option><option>Tata AIA</option><option>SBI Life</option>
+          <option>Bank / NBFC (Loan)</option><option>AMC (Mutual Fund)</option>
+          <option>Direct Client (ITR / Advisory Fee)</option><option>Other</option>
         </select>
       </div>
-      <div class="comm-field"><label>Product Type</label>
+      <div class="comm-field"><label>Business Line / Product</label>
         <select id="commProduct">
-          <option value="">Select Product</option>
-          <option>LIC / Life Insurance</option><option>Health Insurance</option>
-          <option>Motor Insurance</option><option>Term Insurance</option>
-          <option>Mutual Fund</option><option>Endowment Plan</option><option>Other</option>
+          <option value="">Select Business Line</option>
+          <optgroup label="Insurance">
+            <option>LIC / Life Insurance</option><option>Health Insurance</option>
+            <option>Motor Insurance</option><option>Term Insurance</option><option>Endowment Plan</option>
+          </optgroup>
+          <optgroup label="Investments">
+            <option>Mutual Fund / SIP</option><option>PPF / NPS Advisory</option><option>Fixed Deposit</option>
+          </optgroup>
+          <optgroup label="Income Tax">
+            <option>ITR Filing Fee</option><option>Tax Planning / Advisory</option><option>GST Filing Fee</option>
+          </optgroup>
+          <optgroup label="Loans">
+            <option>Home Loan Referral</option><option>Personal / Business Loan Referral</option><option>Loan Against Property</option>
+          </optgroup>
+          <optgroup label="Financial Services">
+            <option>Financial Planning Fee</option><option>SME / Corporate Insurance</option><option>Other Service Fee</option>
+          </optgroup>
+          <option>Other</option>
         </select>
       </div>
       <div class="comm-field"><label>Policy Number</label><input type="text" id="commPolicyNo" placeholder="Optional"></div>
@@ -2316,6 +2332,60 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('addCommModal')">Cancel</button>
       <button class="btn btn-gold" style="flex:1;" onclick="saveCommission()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ADD EXPENSE MODAL ══════════════ -->
+<div class="modal-overlay" id="addExpenseModal">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-title">💸 Add Expense</div>
+    <input type="hidden" id="expEditId" value="">
+    <div class="comm-form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="comm-field"><label>Date</label><input type="date" id="expDate"></div>
+      <div class="comm-field"><label>Amount (₹)</label><input type="number" id="expAmount" placeholder="e.g. 1500"></div>
+    </div>
+    <div class="comm-form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="comm-field"><label>Category</label>
+        <select id="expCategory">
+          <option>Office Rent</option><option>Staff Salary</option><option>Travel & Conveyance</option>
+          <option>Software / Subscriptions</option><option>Marketing & Referral Payout</option>
+          <option>Professional Fees (CA / Legal)</option><option>Bank / Transaction Charges</option>
+          <option>Office Supplies</option><option>Internet / Phone</option><option>Other</option>
+        </select>
+      </div>
+      <div class="comm-field"><label>Business Line</label>
+        <select id="expBusinessLine">
+          <option>General / Shared</option><option>Insurance</option><option>Investments</option>
+          <option>Income Tax</option><option>Loans</option><option>Financial Services</option>
+        </select>
+      </div>
+    </div>
+    <div class="comm-field"><label>Note</label><input type="text" id="expNote" placeholder="Optional description"></div>
+    <div class="modal-msg" id="expMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('addExpenseModal')">Cancel</button>
+      <button class="btn btn-gold" style="flex:1;" onclick="saveExpenseEntry()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TAX ASSUMPTIONS MODAL ══════════════ -->
+<div class="modal-overlay" id="taxAssumptionsModal">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-title">⚙️ Tax Estimate Assumptions</div>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+      These slabs drive the "Estimated Tax" figure on the Income, Expenses & Tax page. Defaults reflect the last known New Tax Regime slabs — update them yourself (or with your CA) whenever slabs change, since this app can't know future budget changes.
+    </div>
+    <div id="taxSlabRows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+    <div class="comm-form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="comm-field"><label>Rebate ceiling — taxable income up to (₹)</label><input type="number" id="taxRebateCeiling" placeholder="e.g. 1200000"></div>
+      <div class="comm-field"><label>Cess on tax (%)</label><input type="number" id="taxCessPct" placeholder="e.g. 4"></div>
+    </div>
+    <div class="modal-msg" id="taxAssumptionsMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('taxAssumptionsModal')">Cancel</button>
+      <button class="btn btn-gold" style="flex:1;" onclick="saveTaxAssumptions()">Save</button>
     </div>
   </div>
 </div>
@@ -2488,6 +2558,10 @@
     <div class="modal-field">
       <label>Upload File (PDF / Image)</label>
       <input type="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png,.webp" style="width:100%;background:#F4F6FB;border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:9px;font-size:13px;">
+    </div>
+    <div class="modal-field">
+      <label>Or link a Google Sheet / Drive file (optional)</label>
+      <input type="text" id="docExternalLink" placeholder="https://docs.google.com/spreadsheets/..." style="width:100%;background:#F4F6FB;border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:9px;font-size:13px;">
     </div>
     <div class="modal-msg" id="docMsg" style="color:var(--mf);"></div>
     <div class="modal-actions">
@@ -2756,6 +2830,10 @@
     <div class="nav-item" onclick="showSection('revenue', this)" style="border:1px solid rgba(184,134,11,0.35);">
       <div class="nav-dot" style="background:var(--gold)"></div> 📊 Revenue Dashboard
       <span class="new-nav-badge" style="background:var(--gold);color:#fff;margin-left:auto;">NEW</span>
+    </div>
+    <div class="nav-item" onclick="showSection('expenses', this)" style="border:1px solid rgba(217,43,43,0.3);">
+      <div class="nav-dot" style="background:var(--urgent)"></div> 💸 Income, Expenses & Tax
+      <span class="new-nav-badge" style="background:var(--urgent);color:#fff;margin-left:auto;">NEW</span>
     </div>
     <div class="nav-item" onclick="showSection('actions', this)" style="border:1px solid rgba(217,43,43,0.35);">
       <div class="nav-dot" style="background:var(--urgent)"></div> 🎯 Today's Actions
@@ -3596,6 +3674,15 @@
 
       <!-- ══════════════ 📅 DAILY PLANNER ══════════════ -->
       <div id="sec-planner" class="section-page planner-page">
+
+        <!-- Daily Briefing — a local-data summary of what changed / is due, shown whenever the dashboard opens -->
+        <div id="dailyBriefingCard" style="margin:16px 28px 0;background:linear-gradient(135deg,rgba(184,134,11,0.07),rgba(33,118,199,0.04));border:1px solid rgba(184,134,11,0.25);border-radius:14px;padding:16px 20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:900;" id="briefingDateLabel">📋 Today's Briefing</div>
+            <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="renderDailyBriefing()">🔄 Refresh</button>
+          </div>
+          <div id="dailyBriefingBody" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;"></div>
+        </div>
 
         <!-- Date Navigation -->
         <div class="planner-date-nav">
@@ -4449,6 +4536,63 @@
           <div class="rev-chart-card"><div class="rev-chart-title">🏆 Top 5 Clients by Commission</div><div id="topClientsBreakdown"></div></div>
         </div>
       </div><!-- end sec-revenue -->
+
+      <!-- ══════════════ INCOME, EXPENSES & TAX ══════════════ -->
+      <div id="sec-expenses" class="section-page">
+        <div class="section-divider"></div>
+        <div class="new-sec-header">
+          <div>
+            <div class="new-sec-title">💸 Income, Expenses & Tax</div>
+            <div class="new-sec-sub">Business expenses and an estimated tax picture across all your income sources — stored only on this device</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select id="expFYFilter" onchange="renderExpenses()" style="background:#F4F6FB;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;"></select>
+            <button class="btn btn-ghost" onclick="openModal('taxAssumptionsModal');loadTaxAssumptionsUI()">⚙️ Tax Assumptions</button>
+            <button class="btn btn-gold" onclick="openAddExpenseModal()">+ Add Expense</button>
+          </div>
+        </div>
+
+        <div class="stat-row-4">
+          <div class="kpi-card green"><div class="kpi-label">Income Received (FY)</div><div class="kpi-val" id="expIncomeVal">₹0</div><div class="kpi-sub">All business lines · received commissions</div></div>
+          <div class="kpi-card red"><div class="kpi-label">Expenses (FY)</div><div class="kpi-val" id="expTotalVal">₹0</div><div class="kpi-sub" id="expCountSub">0 entries</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">Net Profit (FY)</div><div class="kpi-val" id="expNetVal">₹0</div><div class="kpi-sub">Income − Expenses</div></div>
+          <div class="kpi-card gold"><div class="kpi-label">Estimated Tax (FY)</div><div class="kpi-val" id="expTaxVal">₹0</div><div class="kpi-sub">New regime · see assumptions</div></div>
+        </div>
+
+        <div style="background:var(--gold-bg);border:1px solid rgba(184,134,11,0.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:11.5px;line-height:1.6;color:var(--text);">
+          ⚠️ <b>This is a rough estimate for planning only</b> — not a tax filing figure. It applies simple slab rates (editable under "Tax Assumptions") to Income − Expenses, and doesn't account for depreciation, presumptive taxation (44ADA/44AD), deductions (80C/80D/etc.), or GST. Confirm actual liability with your CA before paying advance tax or filing your ITR.
+        </div>
+
+        <div class="rev-grid-2">
+          <div class="rev-chart-card">
+            <div class="rev-chart-title">📊 Income vs Expenses — Last 6 Months</div>
+            <div class="bar-chart-wrap" id="incomeExpenseBarChart"></div>
+          </div>
+          <div class="rev-chart-card">
+            <div class="rev-chart-title">🗂️ Expenses by Category</div>
+            <div id="expenseCategoryBreakdown"></div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow);">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🧾 Estimated Advance Tax Schedule (FY)</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Indicative only — based on the estimated annual tax above, split per standard due-date percentages.</div>
+          <div id="advanceTaxSchedule"></div>
+        </div>
+
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);overflow-x:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+            <div style="font-size:13px;font-weight:700;">All Expense Entries</div>
+            <select id="expCategoryFilter" onchange="renderExpenses()" style="background:#F4F6FB;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+          <table class="comm-table"><thead><tr><th>Date</th><th>Category</th><th>Business Line</th><th>Amount (₹)</th><th>Note</th><th>Action</th></tr></thead>
+            <tbody id="expTableBody"></tbody>
+          </table>
+          <div id="expEmpty" style="text-align:center;padding:40px;color:var(--muted);display:none;">No expenses logged yet. Click <strong>+ Add Expense</strong> to start tracking.</div>
+        </div>
+      </div><!-- end sec-expenses -->
 
       <!-- ══════════════ TODAY'S ACTIONS ══════════════ -->
       <div id="sec-actions" class="section-page">
@@ -5812,7 +5956,7 @@ const GROQ_KEY = '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';
 // ── 3. IndexedDB Local Storage (offline-first data layer) ────────────────
 // Stores all data locally → syncs to Supabase when online
 const IDB_NAME    = 'ng-finance-db';
-const IDB_VERSION = 7; // bumped — forces onupgradeneeded to run on all cached devices // bumped to force store recreation with new tables
+const IDB_VERSION = 8; // bumped — adds local-only 'expenses' store
 let _idb = null;
 
 function openIDB() {
@@ -5843,7 +5987,7 @@ function _openIDBInternal() {
       // Delete any stores not in our list (clean slate on version bump)
       const wantedStores = ['commissions','portfolio_clients','sme_prospects',
         'vault_documents','lic_due_list','renewals','ai_reminders',
-        'monthly_summaries','tasks','planner_events','trash','journal_tasks','pipeline_leads','offline_queue','settings'];
+        'monthly_summaries','tasks','planner_events','trash','journal_tasks','pipeline_leads','offline_queue','settings','expenses'];
       Array.from(db.objectStoreNames).forEach(name => {
         if (!wantedStores.includes(name)) {
           try { db.deleteObjectStore(name); } catch(er) {}
@@ -5866,6 +6010,7 @@ function _openIDBInternal() {
         { name: 'pipeline_leads',    keyPath: 'id' },
         { name: 'offline_queue',     keyPath: 'qid', autoIncrement: true },
         { name: 'settings',          keyPath: 'key' },
+        { name: 'expenses',          keyPath: 'id' }, // local-only — no Supabase table, never leaves this device unless exported
       ];
       stores.forEach(s => {
         if (!db.objectStoreNames.contains(s.name)) {
@@ -5952,8 +6097,26 @@ async function queueOfflineOp(table, op, data) {
 // ── 5. Smart Data Layer — tries Supabase, falls back to IndexedDB ─────────
 // Wraps getDB().from() calls with offline fallback
 
+// ── Cloud Sync toggle — when off, the app never talks to Supabase and runs
+// purely off the on-device IndexedDB store. Defaults to ON so existing
+// installs that already have data in Supabase keep working unchanged;
+// flip it off from Settings → Database & Sync Manager for local-only use.
+function cloudSyncEnabled() {
+  const v = localStorage.getItem('ng_cloud_sync_enabled');
+  return v === null ? true : v === '1';
+}
+function setCloudSyncEnabled(on) {
+  localStorage.setItem('ng_cloud_sync_enabled', on ? '1' : '0');
+  const slider = document.getElementById('cloudSyncSlider');
+  const knob = document.getElementById('cloudSyncKnob');
+  if (slider) slider.style.background = on ? 'var(--mf)' : 'var(--dark4)';
+  if (knob) knob.style.left = on ? '21px' : '3px';
+  toast(on ? '☁️ Cloud sync enabled' : '📴 Local-only mode — data stays on this device');
+  refreshDBManager();
+}
+
 async function smartFetch(table, orderBy = 'created_at') {
-  if (navigator.onLine) {
+  if (cloudSyncEnabled() && navigator.onLine) {
     try {
       const { data, error } = await getDB().from(table)
         .select('*').order(orderBy, { ascending: false });
@@ -5965,12 +6128,12 @@ async function smartFetch(table, orderBy = 'created_at') {
       }
     } catch(e) {}
   }
-  // Offline fallback
+  // Offline / local-only fallback
   return await idbGetAll(table);
 }
 
 async function smartInsert(table, record) {
-  if (navigator.onLine) {
+  if (cloudSyncEnabled() && navigator.onLine) {
     try {
       const { data, error } = await getDB().from(table).insert([record]).select();
       if (!error && data) {
@@ -5979,15 +6142,15 @@ async function smartInsert(table, record) {
       }
     } catch(e) {}
   }
-  // Offline: save locally + queue for sync
+  // Offline / local-only: save locally + queue for sync
   const localRecord = { ...record, id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2) };
   await idbPut(table, localRecord);
-  await queueOfflineOp(table, 'insert', record);
+  if (cloudSyncEnabled()) await queueOfflineOp(table, 'insert', record);
   return localRecord;
 }
 
 async function smartUpdate(table, id, updates) {
-  if (navigator.onLine) {
+  if (cloudSyncEnabled() && navigator.onLine) {
     try {
       const { data, error } = await getDB().from(table).update(updates).eq('id', id).select();
       if (!error && data) {
@@ -5998,11 +6161,11 @@ async function smartUpdate(table, id, updates) {
   }
   const existing = (await idbGetAll(table)).find(r => r.id === id);
   if (existing) await idbPut(table, { ...existing, ...updates });
-  await queueOfflineOp(table, 'update', { id, updates });
+  if (cloudSyncEnabled()) await queueOfflineOp(table, 'update', { id, updates });
 }
 
 async function smartDelete(table, id) {
-  if (navigator.onLine) {
+  if (cloudSyncEnabled() && navigator.onLine) {
     try {
       await getDB().from(table).delete().eq('id', id);
     } catch(e) {}
@@ -6012,7 +6175,7 @@ async function smartDelete(table, id) {
 
 // ── 6. Sync offline queue when back online ────────────────────────────────
 async function syncOfflineData() {
-  if (!navigator.onLine) return;
+  if (!cloudSyncEnabled() || !navigator.onLine) return;
   const queue = await idbGetAll('offline_queue');
   if (queue.length === 0) return;
 
@@ -6149,7 +6312,7 @@ function copyAppsScriptSnippet() {
 // or take a full local backup on demand.
 // ══════════════════════════════════════════════════════════════════════════
 const DB_MANAGED_TABLES = ['commissions','portfolio_clients','sme_prospects',
-  'vault_documents','lic_due_list','renewals','tasks','planner_events','pipeline_leads'];
+  'vault_documents','lic_due_list','renewals','tasks','planner_events','pipeline_leads','expenses'];
 
 async function refreshDBManager() {
   const statusBox = document.getElementById('dbManagerStatus');
@@ -6157,22 +6320,32 @@ async function refreshDBManager() {
   if (!statusBox || !tablesBox) return;
 
   const online = navigator.onLine;
+  const syncOn = cloudSyncEnabled();
   let supaOk = false;
-  try {
-    const { error } = await getDB().from('commissions').select('id').limit(1);
-    supaOk = !error;
-  } catch (e) { supaOk = false; }
+  if (syncOn && online) {
+    try {
+      const { error } = await getDB().from('commissions').select('id').limit(1);
+      supaOk = !error;
+    } catch (e) { supaOk = false; }
+  }
 
   const queue = await idbGetAll('offline_queue');
+
+  const toggle = document.getElementById('cloudSyncToggle');
+  const slider = document.getElementById('cloudSyncSlider');
+  const knob = document.getElementById('cloudSyncKnob');
+  if (toggle) toggle.checked = syncOn;
+  if (slider) slider.style.background = syncOn ? 'var(--mf)' : 'var(--dark4)';
+  if (knob) knob.style.left = syncOn ? '21px' : '3px';
 
   statusBox.innerHTML = `
     <div style="background:${online?'rgba(26,140,78,0.08)':'rgba(217,43,43,0.08)'};border-radius:8px;padding:10px;">
       <div style="color:var(--muted);">Network</div>
       <div style="font-weight:700;color:${online?'var(--mf)':'var(--urgent)'};">${online?'🟢 Online':'🔴 Offline'}</div>
     </div>
-    <div style="background:${supaOk?'rgba(26,140,78,0.08)':'rgba(217,43,43,0.08)'};border-radius:8px;padding:10px;">
+    <div style="background:${!syncOn?'var(--dark3)':(supaOk?'rgba(26,140,78,0.08)':'rgba(217,43,43,0.08)')};border-radius:8px;padding:10px;">
       <div style="color:var(--muted);">Cloud (Supabase)</div>
-      <div style="font-weight:700;color:${supaOk?'var(--mf)':'var(--urgent)'};">${supaOk?'🟢 Connected':'🔴 Unreachable'}</div>
+      <div style="font-weight:700;color:${!syncOn?'var(--muted)':(supaOk?'var(--mf)':'var(--urgent)')};">${!syncOn?'📴 Sync off':(supaOk?'🟢 Connected':'🔴 Unreachable')}</div>
     </div>
     <div style="background:var(--dark3);border-radius:8px;padding:10px;">
       <div style="color:var(--muted);">Pending Offline Writes</div>
@@ -9000,10 +9173,11 @@ async function emptyTrash() {
 
 function showSection(s, el) {
   if (s === 'pdfupload') { setTimeout(initPdfSection, 50); }
-  if (s === 'planner')   { setTimeout(renderPlanner, 50); }
+  if (s === 'planner')   { setTimeout(renderPlanner, 50); setTimeout(renderDailyBriefing, 50); }
   if (s === 'trash')     { setTimeout(renderTrash, 50); }
   if (s === 'journal')   { setTimeout(renderJournal, 50); }
   if (s === 'pipeline')  { setTimeout(renderPipeline, 50); }
+  if (s === 'expenses')  { setTimeout(renderExpenses, 50); }
   if (s === 'thinktank') { setTimeout(initThinkTank, 50); setTimeout(_loadTTChecklistState, 100); }
   if (s === 'ragchat' && typeof ragLoadContext === 'function' && !_ragContext) { setTimeout(ragLoadContext, 150); }
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -9130,8 +9304,7 @@ function exportLICSummary() {
 // ══════════════════════════════════════════════════════════
 // ── COMMISSIONS — Supabase ──
 async function getCommissions() {
-  const { data, error } = await getDB().from('commissions').select('*').order('due_date', { ascending: true });
-  if (error) { return []; }
+  const data = await smartFetch('commissions', 'due_date');
   return data.map(r => ({
     id: r.id, client: r.client, insurer: r.insurer, product: r.product,
     policyNo: r.policy_no, expected: Number(r.expected), dueDate: r.due_date,
@@ -9203,10 +9376,10 @@ async function renderCommissions() {
   const filter = document.getElementById('commFilter')?.value || 'all';
   const today  = new Date();
 
-  // Auto-update overdue in DB (batch)
+  // Auto-update overdue in DB
   const toOverdue = data.filter(c => c.status === 'pending' && new Date(c.dueDate) < today);
   if (toOverdue.length) {
-    await getDB().from('commissions').update({ status: 'overdue' }).in('id', toOverdue.map(c => c.id));
+    await Promise.all(toOverdue.map(c => smartUpdate('commissions', c.id, { status: 'overdue' })));
     toOverdue.forEach(c => c.status = 'overdue');
   }
 
@@ -9279,10 +9452,7 @@ async function markCommReceived(id) {
   if (!rec) return;
   const amt = prompt(`Amount received for ${rec.client}? (Expected: ₹${rec.expected.toLocaleString('en-IN')})`, rec.expected);
   if (amt === null) return;
-  const { error } = await getDB().from('commissions')
-    .update({ status: 'received', received: parseFloat(amt) || rec.expected })
-    .eq('id', id);
-  if (error) { toast('❌ Update failed', 'error'); return; }
+  await smartUpdate('commissions', id, { status: 'received', received: parseFloat(amt) || rec.expected });
   toast('✅ Commission marked received!');
   renderCommissions(); renderRevenueDashboard();
 }
@@ -9290,10 +9460,288 @@ async function markCommReceived(id) {
 async function deleteComm(id) {
   if (!confirm('Delete this commission entry? It will be moved to Trash (auto-deleted after 60 days).')) return;
   await moveToTrash('commissions', id);
-  const { error } = await getDB().from('commissions').delete().eq('id', id);
-  if (error) { toast('❌ Delete failed', 'error'); return; }
+  await smartDelete('commissions', id);
   toast('🗑️ Moved to Trash', 'warn');
   renderCommissions(); renderRevenueDashboard();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// 💸 INCOME, EXPENSES & TAX — local-only (IndexedDB), never synced to Supabase
+// ══════════════════════════════════════════════════════════════════════════
+async function getExpenses() {
+  const rows = await idbGetAll('expenses');
+  return rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function openAddExpenseModal() {
+  document.getElementById('expEditId').value = '';
+  document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('expAmount').value = '';
+  document.getElementById('expCategory').value = 'Office Rent';
+  document.getElementById('expBusinessLine').value = 'General / Shared';
+  document.getElementById('expNote').value = '';
+  document.getElementById('expMsg').textContent = '';
+  openModal('addExpenseModal');
+}
+
+async function editExpense(id) {
+  const rec = (await getExpenses()).find(r => r.id === id);
+  if (!rec) return;
+  document.getElementById('expEditId').value = rec.id;
+  document.getElementById('expDate').value = rec.date;
+  document.getElementById('expAmount').value = rec.amount;
+  document.getElementById('expCategory').value = rec.category;
+  document.getElementById('expBusinessLine').value = rec.businessLine || 'General / Shared';
+  document.getElementById('expNote').value = rec.note || '';
+  document.getElementById('expMsg').textContent = '';
+  openModal('addExpenseModal');
+}
+
+async function saveExpenseEntry() {
+  const id           = document.getElementById('expEditId').value;
+  const date         = document.getElementById('expDate').value;
+  const amount       = parseFloat(document.getElementById('expAmount').value) || 0;
+  const category     = document.getElementById('expCategory').value;
+  const businessLine = document.getElementById('expBusinessLine').value;
+  const note         = document.getElementById('expNote').value.trim();
+  const msgEl = document.getElementById('expMsg');
+
+  if (!date || !amount) {
+    msgEl.style.color = 'var(--urgent)';
+    msgEl.textContent = '⚠️ Please fill Date and Amount';
+    return;
+  }
+
+  const record = {
+    id: id || 'exp_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+    date, amount, category, businessLine, note,
+    createdAt: new Date().toISOString()
+  };
+  await idbPut('expenses', record);
+
+  msgEl.style.color = 'var(--mf)';
+  msgEl.textContent = '✅ Saved!';
+  setTimeout(() => {
+    closeModal('addExpenseModal');
+    msgEl.textContent = '';
+    renderExpenses();
+  }, 500);
+}
+
+async function deleteExpense(id) {
+  if (!confirm('Delete this expense entry?')) return;
+  await idbDelete('expenses', id);
+  toast('🗑️ Expense deleted', 'warn');
+  renderExpenses();
+}
+
+// ── Tax assumptions (editable, local-only — nobody but the user updates these) ──
+const DEFAULT_TAX_SLABS = [
+  { upto: 400000,   rate: 0  },
+  { upto: 800000,   rate: 5  },
+  { upto: 1200000,  rate: 10 },
+  { upto: 1600000,  rate: 15 },
+  { upto: 2000000,  rate: 20 },
+  { upto: 2400000,  rate: 25 },
+  { upto: Infinity, rate: 30 },
+];
+function getTaxAssumptions() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('ng_tax_assumptions') || 'null');
+    if (saved && Array.isArray(saved.slabs) && saved.slabs.length) {
+      return { slabs: saved.slabs.map(s => ({ upto: s.upto === null ? Infinity : s.upto, rate: s.rate })),
+               rebateCeiling: saved.rebateCeiling, cessPct: saved.cessPct };
+    }
+  } catch (e) {}
+  return { slabs: DEFAULT_TAX_SLABS, rebateCeiling: 1200000, cessPct: 4 };
+}
+function saveTaxAssumptionsRaw(a) {
+  localStorage.setItem('ng_tax_assumptions', JSON.stringify({
+    slabs: a.slabs.map(s => ({ upto: s.upto === Infinity ? null : s.upto, rate: s.rate })),
+    rebateCeiling: a.rebateCeiling, cessPct: a.cessPct
+  }));
+}
+function loadTaxAssumptionsUI() {
+  const a = getTaxAssumptions();
+  const wrap = document.getElementById('taxSlabRows');
+  if (wrap) {
+    wrap.innerHTML = a.slabs.map((s, i) => `
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:11px;color:var(--muted);width:80px;">${i === 0 ? 'Up to (₹)' : 'Next up to'}</span>
+        <input type="number" class="taxSlabUpto" value="${s.upto === Infinity ? '' : s.upto}" placeholder="${s.upto === Infinity ? 'no limit' : ''}"
+          style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--dark3);color:var(--text);font-size:12px;" ${s.upto === Infinity ? 'disabled' : ''}>
+        <input type="number" class="taxSlabRate" value="${s.rate}" style="width:60px;padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--dark3);color:var(--text);font-size:12px;">
+        <span style="font-size:11px;color:var(--muted);">%</span>
+      </div>`).join('');
+  }
+  const rc = document.getElementById('taxRebateCeiling'); if (rc) rc.value = a.rebateCeiling;
+  const cp = document.getElementById('taxCessPct'); if (cp) cp.value = a.cessPct;
+}
+function saveTaxAssumptions() {
+  const uptos = Array.from(document.querySelectorAll('.taxSlabUpto')).map(el => el.value ? parseFloat(el.value) : Infinity);
+  const rates = Array.from(document.querySelectorAll('.taxSlabRate')).map(el => parseFloat(el.value) || 0);
+  const slabs = uptos.map((upto, i) => ({ upto, rate: rates[i] || 0 }));
+  const rebateCeiling = parseFloat(document.getElementById('taxRebateCeiling').value) || 0;
+  const cessPct = parseFloat(document.getElementById('taxCessPct').value) || 0;
+  saveTaxAssumptionsRaw({ slabs, rebateCeiling, cessPct });
+  const msg = document.getElementById('taxAssumptionsMsg');
+  msg.style.color = 'var(--mf)'; msg.textContent = '✅ Saved';
+  toast('✅ Tax assumptions updated');
+  setTimeout(() => { closeModal('taxAssumptionsModal'); msg.textContent = ''; renderExpenses(); }, 500);
+}
+function computeEstimatedTax(income) {
+  const a = getTaxAssumptions();
+  if (income <= 0) return 0;
+  if (income <= a.rebateCeiling) return 0; // simplified 87A-style rebate — see disclaimer in UI
+  let tax = 0, lower = 0;
+  for (const slab of a.slabs) {
+    const upto = Math.min(slab.upto, income);
+    if (upto > lower) { tax += (upto - lower) * slab.rate / 100; lower = upto; }
+    if (income <= slab.upto) break;
+  }
+  return Math.round(tax * (1 + a.cessPct / 100));
+}
+
+// ── Indian Financial Year helpers (Apr 1 – Mar 31) ──
+function fyLabelForDate(dateInput) {
+  const d = new Date(dateInput);
+  const y = d.getFullYear();
+  const startYear = d.getMonth() >= 3 ? y : y - 1;
+  return 'FY ' + startYear + '-' + String((startYear + 1) % 100).padStart(2, '0');
+}
+function currentFYLabel() { return fyLabelForDate(new Date()); }
+function fyBounds(label) {
+  const startYear = parseInt(label.replace('FY ', '').split('-')[0], 10);
+  return { start: new Date(startYear, 3, 1), end: new Date(startYear + 1, 2, 31, 23, 59, 59) };
+}
+function populateFYFilter(allDates) {
+  const sel = document.getElementById('expFYFilter');
+  if (!sel) return;
+  const labels = new Set([currentFYLabel()]);
+  allDates.forEach(d => { if (d) labels.add(fyLabelForDate(d)); });
+  const sorted = Array.from(labels).sort().reverse();
+  const prevVal = sel.value;
+  sel.innerHTML = sorted.map(l => `<option value="${l}">${l}</option>`).join('');
+  sel.value = sorted.includes(prevVal) ? prevVal : currentFYLabel();
+}
+
+async function renderExpenses() {
+  const commissions = await getCommissions();
+  const expenses = await getExpenses();
+
+  populateFYFilter([...commissions.map(c => c.addedOn), ...expenses.map(e => e.date)]);
+  const fy = document.getElementById('expFYFilter')?.value || currentFYLabel();
+  const { start, end } = fyBounds(fy);
+  const inFY = d => { const dt = new Date(d); return dt >= start && dt <= end; };
+
+  const incomeFY   = commissions.filter(c => c.status === 'received' && inFY(c.addedOn)).reduce((s, c) => s + (c.received || c.expected), 0);
+  const expensesFY = expenses.filter(e => inFY(e.date));
+  const expTotal   = expensesFY.reduce((s, e) => s + e.amount, 0);
+  const net        = incomeFY - expTotal;
+  const tax        = computeEstimatedTax(Math.max(net, 0));
+
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setEl('expIncomeVal', '₹' + incomeFY.toLocaleString('en-IN'));
+  setEl('expTotalVal', '₹' + expTotal.toLocaleString('en-IN'));
+  setEl('expCountSub', expensesFY.length + ' entries · ' + fy);
+  setEl('expNetVal', '₹' + net.toLocaleString('en-IN'));
+  setEl('expTaxVal', '₹' + tax.toLocaleString('en-IN'));
+
+  // Category filter dropdown
+  const catSel = document.getElementById('expCategoryFilter');
+  const cats = Array.from(new Set(expensesFY.map(e => e.category)));
+  if (catSel) {
+    const prevVal = catSel.value || 'all';
+    catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    catSel.value = cats.includes(prevVal) ? prevVal : 'all';
+  }
+  const catFilter = catSel?.value || 'all';
+  const filteredRows = catFilter === 'all' ? expensesFY : expensesFY.filter(e => e.category === catFilter);
+
+  // Table
+  const tbody = document.getElementById('expTableBody');
+  const empty = document.getElementById('expEmpty');
+  if (tbody) {
+    if (filteredRows.length === 0) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+    } else {
+      if (empty) empty.style.display = 'none';
+      tbody.innerHTML = filteredRows.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => `
+        <tr>
+          <td>${new Date(e.date).toLocaleDateString('en-IN')}</td>
+          <td>${e.category}</td>
+          <td style="color:var(--muted);font-size:11px">${e.businessLine || 'General / Shared'}</td>
+          <td><strong>₹${e.amount.toLocaleString('en-IN')}</strong></td>
+          <td style="color:var(--muted);font-size:11px">${e.note || '—'}</td>
+          <td>
+            <button onclick="editExpense('${e.id}')" style="font-size:11px;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;">✎</button>
+            <button onclick="deleteExpense('${e.id}')" style="font-size:11px;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--urgent);cursor:pointer;margin-left:4px;font-family:'DM Sans',sans-serif;">✕</button>
+          </td>
+        </tr>`).join('');
+    }
+  }
+
+  // Category breakdown bars
+  const catMap = {};
+  expensesFY.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+  const catEl = document.getElementById('expenseCategoryBreakdown');
+  if (catEl) {
+    const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+    const maxC = sorted[0]?.[1] || 1;
+    catEl.innerHTML = sorted.length ? sorted.map(([cat, val]) => `
+      <div class="aging-bar-wrap"><div class="aging-label" style="width:150px;">${cat}</div><div class="aging-bar-track"><div class="aging-bar-fill" style="background:var(--urgent);width:${val / maxC * 100}%"></div></div><div style="font-size:11px;font-weight:700;color:var(--urgent);width:80px;text-align:right">₹${val.toLocaleString('en-IN')}</div></div>
+    `).join('') : `<div style="color:var(--muted);font-size:12px;padding:10px 0;">No expenses logged for ${fy} yet.</div>`;
+  }
+
+  // Income vs expense — last 6 calendar months (independent of FY filter, for trend context)
+  const barWrap = document.getElementById('incomeExpenseBarChart');
+  if (barWrap) {
+    const today = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const label = d.toLocaleString('en-IN', { month: 'short' });
+      const inc = commissions.filter(c => c.status === 'received' && new Date(c.addedOn).getMonth() === d.getMonth() && new Date(c.addedOn).getFullYear() === d.getFullYear()).reduce((s, c) => s + (c.received || c.expected), 0);
+      const exp = expenses.filter(e => new Date(e.date).getMonth() === d.getMonth() && new Date(e.date).getFullYear() === d.getFullYear()).reduce((s, e) => s + e.amount, 0);
+      months.push({ label, inc, exp });
+    }
+    const maxV = Math.max(...months.map(m => Math.max(m.inc, m.exp)), 1);
+    barWrap.innerHTML = months.map(m => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="display:flex;gap:3px;align-items:flex-end;height:140px;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+            <div style="font-size:9px;color:var(--mf);">${m.inc > 0 ? '₹' + Math.round(m.inc / 1000) + 'k' : ''}</div>
+            <div style="width:12px;border-radius:3px 3px 0 0;background:var(--mf);height:${Math.max(m.inc / maxV * 110, m.inc > 0 ? 4 : 2)}px;" title="Income ₹${m.inc.toLocaleString('en-IN')}"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+            <div style="font-size:9px;color:var(--urgent);">${m.exp > 0 ? '₹' + Math.round(m.exp / 1000) + 'k' : ''}</div>
+            <div style="width:12px;border-radius:3px 3px 0 0;background:var(--urgent);height:${Math.max(m.exp / maxV * 110, m.exp > 0 ? 4 : 2)}px;" title="Expenses ₹${m.exp.toLocaleString('en-IN')}"></div>
+          </div>
+        </div>
+        <div class="bar-label">${m.label}</div>
+      </div>`).join('');
+  }
+
+  // Advance tax schedule (standard Indian due-date cumulative percentages)
+  const schedEl = document.getElementById('advanceTaxSchedule');
+  if (schedEl) {
+    if (tax <= 0) {
+      schedEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">Estimated tax is ₹0 for ${fy} — no advance tax indicated.</div>`;
+    } else {
+      const scheduleRows = [{ due: '15 Jun', pct: 15 }, { due: '15 Sep', pct: 45 }, { due: '15 Dec', pct: 75 }, { due: '15 Mar', pct: 100 }];
+      let prevCum = 0;
+      schedEl.innerHTML = scheduleRows.map(r => {
+        const cum = Math.round(tax * r.pct / 100);
+        const instalment = cum - prevCum;
+        prevCum = cum;
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">
+          <span>By <strong>${r.due}</strong> (cumulative ${r.pct}%)</span>
+          <span style="font-weight:700;">₹${instalment.toLocaleString('en-IN')} <span style="color:var(--muted);font-weight:400;">(₹${cum.toLocaleString('en-IN')} cumulative)</span></span>
+        </div>`;
+      }).join('');
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -11205,7 +11653,7 @@ window.addEventListener('load', async () => {
   initBioLockScreen();
 
   // Show planner on load
-  setTimeout(() => { renderPlanner(); renderStats(); }, 300);
+  setTimeout(() => { renderPlanner(); renderStats(); renderDailyBriefing(); }, 300);
 
   // 🔄 Realtime WebSocket (stub) + Polling fallback every 15s
   setupRealtime();
@@ -11281,15 +11729,29 @@ window.addEventListener('load', async () => {
 // Documents stored as: { id, clientName, docType, docName, fileName, fileSize, fileData(base64), uploadDate }
 // ── DOCUMENT VAULT — Supabase ──
 async function getVaultDocs() {
-  const { data, error } = await getDB().from('vault_documents').select('*').order('created_at', { ascending: false });
-  if (error) { return []; }
+  const data = await smartFetch('vault_documents', 'created_at');
   return data.map(r => ({
     id: r.id, clientName: r.client_name, docType: r.doc_type,
     docName: r.doc_name, fileName: r.file_name, fileSize: r.file_size,
-    fileType: r.file_type, storagePath: r.storage_path,
+    fileType: r.file_type, fileData: r.file_data,
+    externalLink: r.external_link,
+    storagePath: r.storage_path,
     publicUrl: r.public_url,
-    uploadDate: new Date(r.created_at).toLocaleDateString('en-IN')
+    createdAt: r.created_at || null,
+    uploadDate: new Date(r.created_at || Date.now()).toLocaleDateString('en-IN')
   }));
+}
+
+// Reads a File into a base64 data: URL — used to store vault documents
+// directly in IndexedDB (this app has no real file-storage backend to
+// upload PDFs/images to, so the file itself lives on-device).
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
 }
 async function saveVaultDocs() {} // no-op
 
@@ -11303,6 +11765,7 @@ function getDocIcon(doc) {
     if (['jpg','jpeg','png','webp'].includes(ext)) return '🖼';
     if (ext === 'pdf') return '📑';
   }
+  if (!doc.fileName && doc.externalLink) return '📊';
   return docTypeIcons[doc.docType] || '📎';
 }
 
@@ -11362,7 +11825,9 @@ async function renderVault() {
             <span class="vault-doc-tag ${docTypeClasses[doc.docType]||'vtag-other'}">${docTypeLabels[doc.docType]||doc.docType}</span>
             <div class="vault-doc-actions">
               ${doc.fileData ? `<button class="vbtn vbtn-dl" onclick="downloadDoc('${doc.id}')">⬇ Download</button>
-              <button class="vbtn vbtn-share" onclick="shareDoc('${doc.id}')">📤 Share</button>` : `<span style="font-size:11px;color:var(--muted);">No file</span>`}
+              <button class="vbtn vbtn-share" onclick="shareDoc('${doc.id}')">📤 Share</button>`
+              : doc.externalLink ? `<button class="vbtn vbtn-dl" onclick="window.open('${doc.externalLink}','_blank')">🔗 Open Sheet</button>`
+              : `<span style="font-size:11px;color:var(--muted);">No file</span>`}
               <button class="vbtn vbtn-del" onclick="deleteDoc('${doc.id}')">🗑</button>
             </div>
           </div>`).join('')}
@@ -11386,38 +11851,32 @@ async function saveDocument() {
   const type      = document.getElementById('docType').value;
   const name      = document.getElementById('docName').value.trim();
   const fileInput = document.getElementById('docFile');
+  const link      = document.getElementById('docExternalLink')?.value.trim() || '';
   const msg       = document.getElementById('docMsg');
   if (!client) { msg.style.color='var(--urgent)'; msg.textContent='❌ Client name required'; return; }
   if (!name)   { msg.style.color='var(--urgent)'; msg.textContent='❌ Document name required'; return; }
 
   const file = fileInput.files[0];
+  const record = { client_name: client, doc_type: type, doc_name: name, created_at: new Date().toISOString() };
 
   if (file) {
-    // ── Upload file to Supabase Storage ──
-    msg.textContent = '📤 Uploading file... please wait';
-    const safeName    = client.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-    const storagePath = `${safeName}/${type}/${Date.now()}_${file.name}`;
+    // File is stored on-device (IndexedDB), not uploaded anywhere
+    msg.textContent = '📤 Reading file...';
+    try {
+      record.file_data = await fileToBase64(file);
+      record.file_name = file.name;
+      record.file_size = file.size;
+      record.file_type = file.type;
+    } catch (e) {
+      msg.style.color='var(--urgent)'; msg.textContent='❌ Could not read file: '+(e.message||'unknown error'); return;
+    }
+  }
+  if (link) record.external_link = link;
 
-    const { error: upErr } = await getDB().storage
-      .from('documents')
-      .upload(storagePath, file, { contentType: file.type, upsert: false });
-
-    if (upErr) { msg.style.color='var(--urgent)'; msg.textContent='❌ Upload failed: '+upErr.message; return; }
-
-    const { data: urlData } = getDB().storage.from('documents').getPublicUrl(storagePath);
-
-    const { error: dbErr } = await getDB().from('vault_documents').insert({
-      client_name: client, doc_type: type, doc_name: name,
-      file_name: file.name, file_size: file.size, file_type: file.type,
-      storage_path: storagePath, public_url: urlData.publicUrl
-    });
-    if (dbErr) { msg.style.color='var(--urgent)'; msg.textContent='❌ DB error: '+dbErr.message; return; }
-  } else {
-    // ── Save metadata only (no file) ──
-    const { error: dbErr } = await getDB().from('vault_documents').insert({
-      client_name: client, doc_type: type, doc_name: name
-    });
-    if (dbErr) { msg.style.color='var(--urgent)'; msg.textContent='❌ '+dbErr.message; return; }
+  try {
+    await smartInsert('vault_documents', record);
+  } catch (e) {
+    msg.style.color='var(--urgent)'; msg.textContent='❌ Save failed: '+(e.message||'unknown error'); return;
   }
 
   msg.style.color='var(--mf)'; msg.textContent='✅ Document saved!';
@@ -11426,6 +11885,7 @@ async function saveDocument() {
     document.getElementById('docClient').value='';
     document.getElementById('docName').value='';
     document.getElementById('docFile').value='';
+    if (document.getElementById('docExternalLink')) document.getElementById('docExternalLink').value='';
     msg.textContent='';
   }, 700);
 }
@@ -11434,14 +11894,15 @@ async function downloadDoc(id) {
   const docs = await getVaultDocs();
   const doc  = docs.find(d => d.id === id);
   if (!doc) return;
-  if (doc.publicUrl) {
-    // Open in new tab — works for PDF, image, Excel, Word
+  if (doc.fileData) {
+    const a = document.createElement('a');
+    a.href = doc.fileData;
+    a.download = doc.fileName || doc.docName || 'document';
+    document.body.appendChild(a); a.click(); a.remove();
+  } else if (doc.publicUrl) {
     window.open(doc.publicUrl, '_blank');
-  } else if (doc.storagePath) {
-    const { data, error } = await getDB().storage
-      .from('documents').createSignedUrl(doc.storagePath, 3600);
-    if (!error) window.open(data.signedUrl, '_blank');
-    else toast('❌ Could not get download link', 'error');
+  } else if (doc.externalLink) {
+    window.open(doc.externalLink, '_blank');
   } else {
     toast('⚠️ No file attached to this document', 'warn');
   }
@@ -11451,28 +11912,34 @@ async function shareDoc(id) {
   const docs = await getVaultDocs();
   const doc  = docs.find(d=>d.id===id);
   if (!doc) return;
+  const hasFile = !!doc.fileData;
+  const hasLink = !!(doc.publicUrl || doc.externalLink);
   document.getElementById('shareModalBody').innerHTML = `
     <div style="margin-bottom:12px;font-weight:600;">${doc.docName}</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Client: ${doc.clientName} · Type: ${docTypeLabels[doc.docType]}</div>
-    ${doc.publicUrl ? `
+    ${hasFile ? `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">This file is stored only on this device — download it to share via WhatsApp, email, etc.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-gold" style="width:100%;" onclick="downloadDoc('${id}');closeModal('shareModal')">⬇ Download File</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="viewDoc('${id}')">👁 Preview</button>
+    </div>` : hasLink ? `
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Share options:</div>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn btn-gold" style="width:100%;" onclick="downloadDoc('${id}');closeModal('shareModal')">⬇ Open / Download File</button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="navigator.clipboard.writeText('${doc.publicUrl}').then(()=>toast('✅ Link copied!'))">🔗 Copy Direct Link</button>
-      ${doc.fileType && doc.fileType.includes('pdf') ? `<button class="btn btn-ghost" style="width:100%;" onclick="window.open('${doc.publicUrl}','_blank')">👁 Preview PDF</button>` : ''}
+      <button class="btn btn-gold" style="width:100%;" onclick="downloadDoc('${id}');closeModal('shareModal')">🔗 Open Link</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="navigator.clipboard.writeText('${doc.publicUrl||doc.externalLink}').then(()=>toast('✅ Link copied!'))">📋 Copy Link</button>
     </div>
-    <div class="share-link-box" style="margin-top:12px;word-break:break-all;font-size:11px;">${doc.publicUrl}</div>`
+    <div class="share-link-box" style="margin-top:12px;word-break:break-all;font-size:11px;">${doc.publicUrl||doc.externalLink}</div>`
     : '<div style="color:var(--muted);font-size:13px;">No file attached to this document entry.</div>'}`;
   openModal('shareModal');
 }
 
-// copyDocBase64 removed — use publicUrl from Supabase Storage instead
-
 async function viewDoc(id) {
   const docs = await getVaultDocs();
   const doc  = docs.find(d => d.id === id);
-  if (!doc?.publicUrl) { toast('⚠️ No file to preview', 'warn'); return; }
-  window.open(doc.publicUrl, '_blank');
+  if (doc?.fileData) { window.open(doc.fileData, '_blank'); return; }
+  if (doc?.publicUrl) { window.open(doc.publicUrl, '_blank'); return; }
+  if (doc?.externalLink) { window.open(doc.externalLink, '_blank'); return; }
+  toast('⚠️ No file to preview', 'warn');
 }
 
 async function deleteDoc(id) {
@@ -11480,11 +11947,7 @@ async function deleteDoc(id) {
   const docs = await getVaultDocs();
   const doc  = docs.find(d => d.id === id);
   await moveToTrash('vault_documents', id, doc);
-  if (doc?.storagePath) {
-    await getDB().storage.from('documents').remove([doc.storagePath]);
-  }
-  const { error } = await getDB().from('vault_documents').delete().eq('id', id);
-  if (error) { toast('❌ Delete failed', 'error'); return; }
+  await smartDelete('vault_documents', id);
   toast('🗑️ Moved to Trash', 'warn');
   renderVault(); renderVaultStats();
 }
@@ -14106,6 +14569,86 @@ function renderStats() {
   } catch(e) { console.warn('[Stats]', e.message); }
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// 📋 DAILY BRIEFING — a plain summary of what's due/changed, built entirely
+// from data already on this device. No AI call, no network required.
+// ══════════════════════════════════════════════════════════════════════════
+async function renderDailyBriefing() {
+  const body = document.getElementById('dailyBriefingBody');
+  if (!body) return;
+  try {
+    const today = new Date();
+    const dateLbl = document.getElementById('briefingDateLabel');
+    if (dateLbl) dateLbl.textContent = '📋 ' + today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    const isSameDay = (a, b) => a.toDateString() === b.toDateString();
+    const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay()); startOfWeek.setHours(0, 0, 0, 0);
+
+    const licRows      = (typeof _licDBData !== 'undefined' && _licDBData.length) ? _licDBData : licData;
+    const licOverdue    = licRows.filter(r => fupStatus(r.fup) === 'overdue' && !(r.called || licCalledSet.has(r.policy)));
+    const licThisMonth  = licRows.filter(r => fupStatus(r.fup) === 'thismonth' && !(r.called || licCalledSet.has(r.policy)));
+    const urgentRenewals = renewals.filter(r => !renewalDoneSet.has(r.id) && r.daysLeft !== null && r.daysLeft !== undefined && r.daysLeft >= 0 && r.daysLeft <= 15);
+
+    const commissions = await getCommissions();
+    const expenses = await getExpenses();
+    const docs = await getVaultDocs();
+
+    const incomeToday = commissions.filter(c => c.status === 'received' && isSameDay(new Date(c.addedOn), today)).reduce((s, c) => s + (c.received || c.expected), 0);
+    const incomeWeek  = commissions.filter(c => c.status === 'received' && new Date(c.addedOn) >= startOfWeek).reduce((s, c) => s + (c.received || c.expected), 0);
+    const expenseWeek = expenses.filter(e => new Date(e.date) >= startOfWeek).reduce((s, e) => s + e.amount, 0);
+    const pendingCommCount = commissions.filter(c => c.status === 'pending').length;
+    const overdueCommission = commissions.filter(c => c.status === 'overdue');
+    const overdueCommAmt = overdueCommission.reduce((s, c) => s + c.expected, 0);
+
+    const threeDaysAgo = new Date(today.getTime() - 3 * 86400000);
+    const recentDocs = docs.filter(d => d.createdAt && new Date(d.createdAt) >= threeDaysAgo);
+
+    const tiles = [];
+    tiles.push({
+      icon: '💰', color: incomeToday > 0 ? 'var(--mf)' : 'var(--muted)',
+      title: 'Income Today', value: '₹' + incomeToday.toLocaleString('en-IN'),
+      sub: '₹' + incomeWeek.toLocaleString('en-IN') + ' this week'
+    });
+    tiles.push({
+      icon: '💸', color: 'var(--urgent)',
+      title: 'Expenses This Week', value: '₹' + expenseWeek.toLocaleString('en-IN'),
+      sub: 'See Income, Expenses & Tax'
+    });
+    tiles.push({
+      icon: '⚠️', color: overdueCommAmt > 0 ? 'var(--urgent)' : 'var(--mf)',
+      title: 'Commission Follow-up', value: overdueCommission.length + ' overdue',
+      sub: overdueCommAmt > 0 ? '₹' + overdueCommAmt.toLocaleString('en-IN') + ' · ' + pendingCommCount + ' pending' : pendingCommCount + ' pending'
+    });
+    tiles.push({
+      icon: '📞', color: licOverdue.length > 0 ? 'var(--urgent)' : 'var(--mf)',
+      title: 'LIC Follow-ups', value: licOverdue.length + ' overdue',
+      sub: licThisMonth.length + ' due this month'
+    });
+    tiles.push({
+      icon: '🔄', color: urgentRenewals.length > 0 ? 'var(--gold)' : 'var(--mf)',
+      title: 'Renewals Due Soon', value: urgentRenewals.length,
+      sub: 'Within 15 days'
+    });
+    tiles.push({
+      icon: '📁', color: 'var(--it)',
+      title: 'Documents Added', value: recentDocs.length,
+      sub: 'Last 3 days'
+    });
+
+    body.innerHTML = tiles.map(t => `
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:16px;">${t.icon}</span>
+          <span style="font-size:11px;color:var(--muted);font-weight:600;">${t.title}</span>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:${t.color};">${t.value}</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${t.sub}</div>
+      </div>`).join('');
+  } catch (e) {
+    console.warn('[DailyBriefing]', e.message);
+  }
+}
+
 
 // ── Restore a renewal from Done back to Active ────────────────────────────
 async function undoRenewalDone(id) {
@@ -14312,6 +14855,17 @@ function ragSearchDocs(query) {
       </div>
       <div id="dbManagerStatus" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:11px;"></div>
       <div id="dbManagerTables" style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.9;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--dark3);border-radius:9px;padding:10px 14px;margin-bottom:14px;">
+        <div>
+          <div style="font-size:12px;font-weight:700;">☁️ Cloud Sync</div>
+          <div style="font-size:10px;color:var(--muted);">Off = everything stays only in this browser (IndexedDB). On = also mirrors to Supabase for cross-device access.</div>
+        </div>
+        <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;margin-left:10px;">
+          <input type="checkbox" id="cloudSyncToggle" onchange="setCloudSyncEnabled(this.checked)" style="opacity:0;width:0;height:0;">
+          <span id="cloudSyncSlider" style="position:absolute;cursor:pointer;inset:0;background:var(--dark4);border-radius:22px;transition:.2s;"></span>
+          <span id="cloudSyncKnob" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);pointer-events:none;"></span>
+        </label>
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-ghost" onclick="refreshDBManager()">🔄 Refresh Status</button>
         <button class="btn btn-ghost" onclick="forceSyncOfflineQueue()">📡 Force Sync Now</button>
