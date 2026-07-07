@@ -2245,6 +2245,36 @@
 </div>
 
 <!-- ══════════════ GOOGLE SHEETS SYNC SETUP MODAL ══════════════ -->
+<!-- ══════════════ CLAUDE AI SETTINGS MODAL ══════════════ -->
+<div class="modal-overlay" id="claudeConfigModal">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-title">⚙️ Claude AI Settings</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+      All the AI-powered features (LIC PDF reading, commission grid extraction, AI reminders, monthly summaries, and the chatbot) run on your own Claude API key. It's stored only in this browser's localStorage and sent directly to Anthropic — never through any server of ours.
+    </div>
+    <div class="comm-form-grid" style="grid-template-columns:1fr;">
+      <div class="comm-field"><label>Claude API Key</label>
+        <input type="password" id="claudeApiKeyInput" placeholder="sk-ant-...">
+      </div>
+      <div class="comm-field"><label>Model</label>
+        <select id="claudeModelSelect">
+          <option value="claude-sonnet-5">Claude Sonnet 5 (recommended)</option>
+          <option value="claude-opus-4-8">Claude Opus 4.8 (highest quality)</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest/cheapest)</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+      Don't have a key? Create one at <span style="color:var(--gold);">console.anthropic.com</span> → API Keys.
+    </div>
+    <div id="claudeConfigMsg" class="modal-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1;" onclick="testClaudeConnection()">🔌 Test Connection</button>
+      <button class="btn btn-gold" style="flex:1;" onclick="saveClaudeConfigFromUI()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="sheetsConfigModal">
   <div class="modal-box" style="width:560px;">
     <div class="modal-title">🔗 Google Sheets — Commission Sync</div>
@@ -4643,7 +4673,7 @@
             <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <div style="font-size:15px;font-weight:800;">💬 NG Financial AI Assistant</div>
-                <div style="font-size:11px;color:var(--muted);" id="ragModelLabel">Powered by Groq · llama-3.3-70b · RAG enabled</div>
+                <div style="font-size:11px;color:var(--muted);" id="ragModelLabel">Powered by Claude · RAG enabled</div>
               </div>
               <div style="display:flex;gap:8px;">
                 <button class="btn btn-ghost" style="font-size:11px;" onclick="ragClearChat()">🗑 Clear</button>
@@ -4706,11 +4736,12 @@
         <div class="new-sec-header">
           <div>
             <div class="new-sec-title">🤖 AI Command Center</div>
-            <div class="new-sec-sub">Powered by Groq · Llama 3.3 · Real-time Supabase Sync</div>
+            <div class="new-sec-sub">Powered by Claude · Real-time Supabase Sync</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <span id="aiEngineStatus" style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(26,140,78,0.12);color:#1A8C4E;font-weight:600;">🟢 Groq Connected</span>
+            <span id="aiEngineStatus" style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(26,140,78,0.12);color:#1A8C4E;font-weight:600;">🟢 Claude Connected</span>
             <span id="rtLastSync" style="font-size:11px;color:var(--muted);">Syncing...</span>
+            <button onclick="openModal('claudeConfigModal');loadClaudeConfigUI()" class="btn btn-ghost" style="font-size:11px;">⚙️ AI Settings</button>
             <button onclick="syncAndRefreshAI()" class="btn btn-ghost" style="font-size:11px;border-color:var(--it);color:var(--it);">🔄 Sync & Refresh AI</button>
           </div>
         </div>
@@ -4725,7 +4756,7 @@
           <div class="kpi-card" style="border-left:3px solid var(--gold);">
             <div class="kpi-label">AI Calls Today</div>
             <div class="kpi-value" style="color:var(--gold);font-size:22px;" id="aiCallCount">0</div>
-            <div class="kpi-sub">of 14,400 free/day</div>
+            <div class="kpi-sub">this browser session</div>
           </div>
           <div class="kpi-card" style="border-left:3px solid var(--inv);">
             <div class="kpi-label">Records in DB</div>
@@ -4754,13 +4785,13 @@
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
             <div>
               <div style="font-weight:700;font-size:15px;">Smart Daily Reminders</div>
-              <div style="font-size:12px;color:var(--muted);">Groq AI scans all your data → tells you who to call today and why</div>
+              <div style="font-size:12px;color:var(--muted);">Claude scans all your data → tells you who to call today and why</div>
             </div>
             <button class="btn btn-gold" id="aiRemindersBtn" onclick="generateAIReminders()">🤖 Get AI Reminders</button>
           </div>
           <div id="aiRemindersContainer">
             <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
-              Click "🤖 Get AI Reminders" to generate smart daily reminders powered by Groq AI
+              Click "🤖 Get AI Reminders" to generate smart daily reminders powered by Claude
             </div>
           </div>
         </div>
@@ -4768,7 +4799,7 @@
         <!-- ── PANEL: UPLOAD PDF ── -->
         <div id="aiPanel-upload" class="ai-panel-body" style="display:none;">
           <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📄 Upload PDF → AI Extracts → Saves to Database</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Upload LIC premium due list, health commission grid, or any insurance PDF. Groq AI reads it and saves data directly to Supabase.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Upload LIC premium due list, health commission grid, or any insurance PDF. Claude reads it and saves data locally (and to Supabase if cloud sync is on).</div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
             <!-- LIC PDF Upload -->
@@ -4881,7 +4912,7 @@ Policy 937698945 - Patel Vishva - ₹25,234 - Qly" style="width:100%;height:180p
         <!-- ── PANEL: MONTHLY SUMMARY ── -->
         <div id="aiPanel-summary" class="ai-panel-body" style="display:none;">
           <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📊 AI Monthly Performance Summary</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Groq AI reads all your data — commissions, LIC due, clients, renewals — and writes a full performance report with actionable insights.</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Claude reads all your data — commissions, LIC due, clients, renewals — and writes a full performance report with actionable insights.</div>
 
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;" id="summaryStatsRow">
             <div class="kpi-card"><div class="kpi-label">Total Commission</div><div class="kpi-value" id="sumCommTotal">—</div></div>
@@ -5787,8 +5818,6 @@ window.addEventListener('unhandledrejection', function(e) {
 });
 
 
-// ── GROQ KEY (alias for compatibility) ──────────────────────────────────
-const GROQ_KEY = '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';
 // Remove loading indicator — JS is running
 (function(){ var l = document.getElementById('ng-loading'); if(l) l.remove(); })();
 
@@ -6702,10 +6731,10 @@ async function processAIPDF(file, type) {
     }
 
     if (progBar) progBar.style.width = '55%';
-    if (progLabel) progLabel.textContent = '🤖 Groq AI processing...';
-    if (progSub)   progSub.textContent = `Sending ${Math.round(pdfText.length/100)/10}KB to Groq...`;
+    if (progLabel) progLabel.textContent = '🤖 Claude AI processing...';
+    if (progSub)   progSub.textContent = `Sending ${Math.round(pdfText.length/100)/10}KB to Claude...`;
 
-    // ── Step 2: Send to Groq AI based on type ─────────────────────────
+    // ── Step 2: Send to Claude based on type ─────────────────────────
     if (type === 'lic') {
       await aiParseLICPDF(pdfText, file.name);
     } else if (type === 'grid') {
@@ -6738,7 +6767,7 @@ async function aiParseGridPDF(pdfText, fileName) {
   const statusEl = document.getElementById('gridParseStatus');
   if (statusEl) { statusEl.textContent = '🤖 AI reading grid...'; statusEl.className = 'ai-status-msg busy'; }
   try {
-    const rates = await groqJSON(
+    const rates = await claudeJSON(
       `You are extracting health insurance commission rates from an Indian insurance grid PDF.
 Extract key insurer rates and return a JSON array. Each object: {
   "insurer": "insurer name",
@@ -6768,7 +6797,7 @@ Extract all rows you can find. Return ONLY JSON array.`,
 
     await smartInsert('ai_parse_log', {
       input_type: 'grid_pdf', input_preview: fileName,
-      records_saved: rates.length, model_used: GROQ_MODEL, status: 'done',
+      records_saved: rates.length, model_used: getClaudeConfig().model, status: 'done',
       created_at: uploadedAt
     });
     toast(`✅ Grid PDF processed — ${rates.length} rate rows saved`);
@@ -7011,7 +7040,7 @@ function onRealtimeConnected() {
   if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
 }
 // ══════════════════════════════════════════════════════════════════════════
-// 💬 RAG POLICY CHATBOT — Full RAG pipeline with Groq
+// 💬 RAG POLICY CHATBOT — Full RAG pipeline with Claude
 // ══════════════════════════════════════════════════════════════════════════
 
 let _ragContext    = null;   // cached context object
@@ -7351,18 +7380,7 @@ ${contextStr}`;
   ];
 
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'system', content: systemPrompt }, ...messages],
-        max_tokens: 1000,
-        temperature: 0.3
-      })
-    });
-    const data = await res.json();
-    const answer = data.choices?.[0]?.message?.content || 'Sorry, I could not get a response. Please try again.';
+    const answer = await claudeAsk(systemPrompt, messages, 1000);
 
     // Remove typing indicator
     document.getElementById(typingId)?.remove();
@@ -7847,33 +7865,16 @@ async function processPdfFiles(files) {
       const category = categorizePdf(extractedText, file.name);
       const fields   = extractFields(extractedText, category);
 
-      // ── 5. Use Groq to enhance extraction for complex documents ───
+      // ── 5. Use Claude to enhance extraction for complex documents ──
       let aiEnhancedFields = {};
-      if (extractedText.length > 200 && typeof GROQ_KEY !== 'undefined') {
+      if (extractedText.length > 200 && claudeConfigured()) {
         try {
           setStatus(`🧠 AI extracting policy details...`);
-          const aiResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
-            body: JSON.stringify({
-              model: 'llama-3.3-70b-versatile',
-              max_tokens: 400,
-              temperature: 0,
-              messages: [{
-                role: 'system',
-                content: 'You are an insurance document parser. Extract structured data from the text. Respond ONLY with valid JSON, no markdown, no explanation.'
-              }, {
-                role: 'user',
-                content: `Extract from this insurance document text and return JSON with these keys (leave blank if not found): client_name, policy_number, insurer, plan_name, premium_amount, sum_assured, nominee_name, expiry_date, policy_date, vehicle_number, category (one of: policy/premium/kyc/renewal/claim/other).\n\nDocument text:\n${extractedText.substring(0, 2000)}`
-              }]
-            })
-          });
-          if (aiResp.ok) {
-            const aiData = await aiResp.json();
-            const aiText = aiData.choices?.[0]?.message?.content || '';
-            const cleaned = aiText.replace(/```json|```/g,'').trim();
-            aiEnhancedFields = JSON.parse(cleaned);
-          }
+          aiEnhancedFields = await claudeJSON(
+            'You are an insurance document parser. Extract structured data from the text.',
+            `Extract from this insurance document text and return JSON with these keys (leave blank if not found): client_name, policy_number, insurer, plan_name, premium_amount, sum_assured, nominee_name, expiry_date, policy_date, vehicle_number, category (one of: policy/premium/kyc/renewal/claim/other).\n\nDocument text:\n${extractedText.substring(0, 2000)}`,
+            400
+          );
         } catch(e) { console.warn('[PDF] AI enhancement failed:', e.message); }
       }
 
@@ -10780,30 +10781,115 @@ if (sessionStorage.getItem('ng_authed') === '1') {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// 🤖 AI ENGINE — Groq (Free: llama-3.3-70b-versatile, 14400 req/day)
+// 🤖 AI ENGINE — Claude (Anthropic Messages API)
+// No API key ships with this file — each user brings their own, entered via
+// AI Command Center → ⚙️ AI Settings and kept only in this browser's
+// localStorage. That's a deliberate change from the old Groq setup, which
+// had a single API key hardcoded in the page source (visible to anyone who
+// viewed the page, and shared across every install of this file).
 // ══════════════════════════════════════════════════════════════════════════
-const GROQ_API_KEY = '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';
-const GROQ_MODEL   = 'llama-3.3-70b-versatile';
-const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
+const CLAUDE_MODELS = {
+  'claude-sonnet-5': 'Claude Sonnet 5 (recommended — balanced quality/cost)',
+  'claude-opus-4-8': 'Claude Opus 4.8 (highest quality, slower/pricier)',
+  'claude-haiku-4-5-20251001': 'Claude Haiku 4.5 (fastest/cheapest)',
+};
+const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 
-async function groqAsk(systemPrompt, userContent, maxTokens = 1500) {
-  const res = await fetch(GROQ_URL, {
+function getClaudeConfig() {
+  return {
+    apiKey: localStorage.getItem('ng_claude_api_key') || '',
+    model: localStorage.getItem('ng_claude_model') || 'claude-sonnet-5',
+  };
+}
+function saveClaudeConfig(apiKey, model) {
+  localStorage.setItem('ng_claude_api_key', apiKey || '');
+  localStorage.setItem('ng_claude_model', model || 'claude-sonnet-5');
+}
+function claudeConfigured() { return !!getClaudeConfig().apiKey; }
+
+// userContentOrMessages: either a plain string (single-turn) or an array of
+// {role:'user'|'assistant', content} for multi-turn chat — Claude takes the
+// system prompt as a separate top-level field, not as a message.
+async function claudeAsk(systemPrompt, userContentOrMessages, maxTokens = 1500) {
+  const { apiKey, model } = getClaudeConfig();
+  if (!apiKey) throw new Error('No Claude API key configured — add one in AI Command Center → ⚙️ AI Settings');
+
+  const messages = Array.isArray(userContentOrMessages)
+    ? userContentOrMessages
+    : [{ role: 'user', content: userContentOrMessages }];
+
+  const res = await fetch(CLAUDE_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: GROQ_MODEL, max_tokens: maxTokens, temperature: 0.1,
-      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userContent }]
-    })
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      // Required for calling the Anthropic API directly from a browser.
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({ model, max_tokens: maxTokens, temperature: 0.2, system: systemPrompt, messages })
   });
-  if (!res.ok) throw new Error(`Groq error ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Claude API error ${res.status}: ${body.slice(0, 200)}`);
+  }
   const d = await res.json();
-  return d.choices[0].message.content.trim();
+  return (d.content || []).map(b => b.text || '').join('').trim();
 }
 
-async function groqJSON(systemPrompt, userContent, maxTokens = 2000) {
-  const text = await groqAsk(systemPrompt + '\n\nRespond ONLY with valid JSON. No markdown, no explanation.', userContent, maxTokens);
+async function claudeJSON(systemPrompt, userContent, maxTokens = 2000) {
+  const text = await claudeAsk(systemPrompt + '\n\nRespond ONLY with valid JSON. No markdown, no explanation, no code fences.', userContent, maxTokens);
   const clean = text.replace(/```json|```/g, '').trim();
   return JSON.parse(clean);
+}
+
+function loadClaudeConfigUI() {
+  const { apiKey, model } = getClaudeConfig();
+  const keyEl = document.getElementById('claudeApiKeyInput');
+  const modelEl = document.getElementById('claudeModelSelect');
+  if (keyEl) keyEl.value = apiKey;
+  if (modelEl) modelEl.value = model;
+  const msg = document.getElementById('claudeConfigMsg');
+  if (msg) msg.textContent = '';
+}
+
+function saveClaudeConfigFromUI() {
+  const apiKey = document.getElementById('claudeApiKeyInput').value.trim();
+  const model = document.getElementById('claudeModelSelect').value;
+  const msg = document.getElementById('claudeConfigMsg');
+  saveClaudeConfig(apiKey, model);
+  msg.style.color = 'var(--mf)';
+  msg.textContent = apiKey ? '✅ Saved' : '💾 Saved (no key set — AI features will prompt for one when used)';
+  toast(apiKey ? '✅ Claude AI settings saved' : '💾 Settings saved');
+  renderAIEngineStatus();
+  setTimeout(() => closeModal('claudeConfigModal'), 900);
+}
+
+async function testClaudeConnection() {
+  const apiKey = document.getElementById('claudeApiKeyInput').value.trim();
+  const model = document.getElementById('claudeModelSelect').value;
+  const msg = document.getElementById('claudeConfigMsg');
+  if (!apiKey) { msg.style.color = 'var(--urgent)'; msg.textContent = '⚠️ Paste your Claude API key first'; return; }
+  msg.style.color = 'var(--muted)'; msg.textContent = '🔌 Testing...';
+  saveClaudeConfig(apiKey, model); // temporarily save so claudeAsk() can read it
+  try {
+    await claudeAsk('Reply with exactly one word.', 'Say "ready".', 20);
+    msg.style.color = 'var(--mf)'; msg.textContent = '✅ Connected — key works';
+  } catch (e) {
+    msg.style.color = 'var(--urgent)'; msg.textContent = '❌ ' + e.message;
+  }
+}
+
+function renderAIEngineStatus() {
+  const el = document.getElementById('aiEngineStatus');
+  if (!el) return;
+  if (claudeConfigured()) {
+    el.textContent = '🟢 Claude Connected';
+    el.style.background = 'rgba(26,140,78,0.12)'; el.style.color = '#1A8C4E';
+  } else {
+    el.textContent = '⚠️ No API Key — click AI Settings';
+    el.style.background = 'rgba(217,43,43,0.12)'; el.style.color = 'var(--urgent)';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -11171,7 +11257,7 @@ async function saveRenewalToDB(renewal) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// 🤖 AI REMINDERS — Groq scans all data → generates smart call list
+// 🤖 AI REMINDERS — Claude scans all data → generates smart call list
 // ══════════════════════════════════════════════════════════════════════════
 async function generateAIReminders() {
   const btn = document.getElementById('aiRemindersBtn');
@@ -11195,7 +11281,7 @@ LIC This Month (uncalled): ${licThisMonth.map(r=>`${r.name} FUP:${r.fup} ₹${r.
 Pending Commissions: ${pendingComm.map(c=>`${c.client} ${c.insurer} ₹${c.amount}`).join(', ')}
 Total clients: ${clients.length}`;
 
-    const reminders = await groqJSON(
+    const reminders = await claudeJSON(
       `You are a smart insurance business assistant for NG Financial Services (agent Riya Sathavara).
 Analyze the data and create 5-8 specific, actionable reminders for TODAY.
 Return JSON array: [{"priority":1-5,"client_name":"...","action":"call|follow_up|collect|remind","reminder_text":"specific actionable text in Hindi/English mix, conversational","section":"licdue|commission|portfolio|renewal","urgency":"high|medium|low"}]
@@ -11224,7 +11310,7 @@ Sort by priority (1=highest). Be specific — use client names, amounts, policy 
     toast('🤖 AI reminders updated!');
 
   } catch(e) {
-    toast('❌ AI error — check Groq quota', 'error');
+    toast('❌ AI error — check your Claude API key/usage', 'error');
   } finally {
     if (btn) { btn.textContent = '🤖 Refresh AI Reminders'; btn.disabled = false; }
   }
@@ -11239,7 +11325,7 @@ async function renderAIReminders() {
   if (!container) return;
   if (!data || data.length === 0) {
     container.innerHTML = `<div style="text-align:center;padding:18px;color:var(--muted);font-size:13px;">
-      Click "🤖 Get AI Reminders" to generate smart daily reminders powered by Groq AI</div>`;
+      Click "🤖 Get AI Reminders" to generate smart daily reminders powered by Claude</div>`;
     return;
   }
 
@@ -11266,14 +11352,14 @@ async function dismissReminder(id) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// 🤖 AI PDF PARSER — Upload LIC PDF → Groq extracts all rows → saves to DB
+// 🤖 AI PDF PARSER — Upload LIC PDF → Claude extracts all rows → saves to DB
 // ══════════════════════════════════════════════════════════════════════════
 async function aiParseLICPDF(pdfText, fileName) {
   const statusEl = document.getElementById('aiParseStatus');
   if (statusEl) statusEl.textContent = '🤖 AI reading PDF...';
 
   try {
-    const rows = await groqJSON(
+    const rows = await claudeJSON(
       `You are extracting LIC Premium Due List data from a PDF.
 Extract every policy row into a JSON array.
 Each object must have these exact keys:
@@ -11315,7 +11401,7 @@ Return ONLY the JSON array, no explanation.`,
     // Log it
     await smartInsert('ai_parse_log', {
       input_type: 'lic_pdf', input_preview: fileName,
-      records_saved: rows.length, model_used: GROQ_MODEL, status: 'done',
+      records_saved: rows.length, model_used: getClaudeConfig().model, status: 'done',
       created_at: new Date().toISOString()
     });
 
@@ -11345,7 +11431,7 @@ async function aiParseText(text, targetSection) {
     };
 
     const prompt = sectionPrompts[targetSection] || sectionPrompts.commission;
-    const rows = await groqJSON(
+    const rows = await claudeJSON(
       `You are an insurance data extraction AI for NG Financial Services India.
 ${prompt}
 If a field is missing, use null. Dates must be in YYYY-MM-DD format. All amounts as numbers without currency symbols.
@@ -11410,7 +11496,7 @@ Return ONLY the JSON array.`,
     await smartInsert('ai_parse_log', {
       input_type: 'pasted_text_' + targetSection,
       input_preview: text.substring(0, 100),
-      records_saved: saved, model_used: GROQ_MODEL, status: 'done',
+      records_saved: saved, model_used: getClaudeConfig().model, status: 'done',
       created_at: new Date().toISOString()
     });
 
@@ -11424,7 +11510,7 @@ Return ONLY the JSON array.`,
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// 🤖 MONTHLY SUMMARY — Groq generates performance report
+// 🤖 MONTHLY SUMMARY — Claude generates performance report
 // ══════════════════════════════════════════════════════════════════════════
 async function generateMonthlySummary() {
   const btn = document.getElementById('monthlySummaryBtn');
@@ -11452,7 +11538,7 @@ LIC policies: ${licRows.length} | Clients called: ${calledCount}/${licRows.lengt
 Portfolio clients: ${clients.length} | SME prospects: ${sme.length}
 Top commission clients: ${commissions.sort((a,b)=>b.amount-a.amount).slice(0,5).map(c=>`${c.client} ₹${c.amount}`).join(', ')}`;
 
-    const summary = await groqAsk(
+    const summary = await claudeAsk(
       `You are a business performance analyst for NG Financial Services, an insurance agency in India run by Riya Sathavara.
 Write a concise monthly performance summary (200-250 words) in a professional but friendly tone.
 Include: key highlights, what went well, areas to improve, 3 specific action items for next month.
@@ -11566,6 +11652,7 @@ window.addEventListener('load', async () => {
   // renderStats() call that fills in the top stat cards, leaving them stuck
   // on "Loading..." indefinitely — network calls are now also time-boxed,
   // see withTimeout() in the mini Supabase client above).
+  renderAIEngineStatus(); // pure local check — run before the slow network-bound calls below
   const safeRender = async (fn, label) => { try { await fn(); } catch (e) { console.warn('[Init]', label, 'failed:', e.message); } };
   await safeRender(renderCommissions, 'renderCommissions');
   await safeRender(renderRevenueDashboard, 'renderRevenueDashboard');
@@ -13474,7 +13561,7 @@ async function autoPurgeTrash() {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// 🤖 AI CHATBOT — PDF & Data recall via Groq
+// 🤖 AI CHATBOT — PDF & Data recall via Claude
 // ══════════════════════════════════════════════════════════════════════
 
 let _chatHistory = []; // {role, content}
@@ -13572,18 +13659,7 @@ Rules:
 - Today's date: ${new Date().toLocaleDateString('en-IN', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}`;
 
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'system', content: systemPrompt }, ...messages],
-        max_tokens: 600,
-        temperature: 0.4
-      })
-    });
-    const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content || 'Sorry, I could not get a response.';
+    const answer = await claudeAsk(systemPrompt, messages, 600);
     _chatAppend('assistant', answer);
     _chatHistory.push({ role: 'user', content: question });
     _chatHistory.push({ role: 'assistant', content: answer });
