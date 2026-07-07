@@ -2557,13 +2557,16 @@
   <aside class="sidebar">
     <div class="sidebar-section-title">Dashboard</div>
     <div class="nav-item active" onclick="showSection('planner', this)" style="border:1px solid rgba(33,118,199,0.3);">
+      <div class="nav-dot" style="background:var(--ins)"></div> 📅 Daily Planner
+      <span class="nav-count" style="background:rgba(33,118,199,0.12);color:var(--ins);" id="plannerNavCount">0</span>
+    </div>
     <div class="nav-item" onclick="showSection('renewals', this)" >
+      <div class="nav-dot" style="background:var(--gold)"></div> Renewals
+      <span class="nav-count">7</span>
+    </div>
     <div class="nav-item" onclick="showSection('journal', this)" style="border:1px solid rgba(26,140,78,0.3);">
       <div class="nav-dot" style="background:var(--mf)"></div> 📓 Daily Journal
       <span class="nav-count" style="background:rgba(26,140,78,0.12);color:var(--mf);" id="journalNavCount">0</span>
-    </div>
-      <div class="nav-dot" style="background:var(--gold)"></div> Renewals
-      <span class="nav-count">7</span>
     </div>
     <div class="nav-item" onclick="showSection('worklist', this)" >
       <div class="nav-dot" style="background:var(--muted)"></div> Worklist
@@ -2584,9 +2587,6 @@
     <div class="nav-item" onclick="showSection('profiles', this)" style="border:1px solid rgba(184,134,11,0.4);background:rgba(184,134,11,0.03);">
       <div class="nav-dot" style="background:var(--gold)"></div> 👑 Owner Profiles
       <span class="nav-count" style="background:rgba(184,134,11,0.2);color:var(--gold);">2</span>
-    </div>
-      <div class="nav-dot" style="background:var(--ins)"></div> 📅 Daily Planner
-      <span class="nav-count" style="background:rgba(33,118,199,0.12);color:var(--ins);" id="plannerNavCount">0</span>
     </div>
     <div class="nav-item" onclick="showSection('trash', this)" style="border:1px solid rgba(217,43,43,0.2);">
       <div class="nav-dot" style="background:var(--urgent)"></div> 🗑 Trash Bin
