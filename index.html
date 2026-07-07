@@ -211,7 +211,11 @@
   .target-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light)); border-radius:8px; }
 
   /* CENTER */
-  .center { padding:20px 24px; overflow-y:auto; }
+  /* min-width:0 lets this grid column shrink below its content's natural
+     width — without it, any non-wrapping child (e.g. a wide auto-fit grid)
+     forces the whole 3-column .main layout wider than the viewport on
+     narrow/mobile screens, causing horizontal overflow of the entire page. */
+  .center { padding:20px 24px; overflow-y:auto; min-width: 0; }
   .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
   .section-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; }
 
@@ -2507,7 +2511,7 @@
   <button class="pwa-menu-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" style="display:none;width:36px;height:36px;border:none;border-radius:8px;background:rgba(184,134,11,0.15);color:var(--gold);font-size:18px;cursor:pointer;display:flex!important;align-items:center;justify-content:center;flex-shrink:0;">☰</button>
     <div class="header-actions">
     <div class="session-badge">🟢 <span id="sessionUser">Logged In</span></div>
-    <button onclick="openSecurityModal()" title="Fingerprint / PIN Settings" style="display:inline-flex!important;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--it);background:rgba(112,72,200,0.08);color:var(--it);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">🫆 Security</button>
+    <button id="securityHeaderBtn" class="btn-ghost" onclick="openSecurityModal()" title="Fingerprint / PIN Settings" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--it);background:rgba(112,72,200,0.08);color:var(--it);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">🫆 Security</button>
     <button class="btn btn-ghost" onclick="openModal('pwModal');renderBioSettings()">🔑 PIN</button>
     <button class="btn btn-ghost" onclick="toggleTheme()" id="themeToggleBtn" title="Toggle dark/light mode">🌙 Dark Mode</button>
     <button class="btn btn-ghost" onclick="window.print()">🖨 Print</button>
@@ -4370,6 +4374,14 @@
           ⚠️ <b>This is a rough estimate for planning only</b> — not a tax filing figure. It applies simple slab rates (editable under "Tax Assumptions") to Income − Expenses, and doesn't account for depreciation, presumptive taxation (44ADA/44AD), deductions (80C/80D/etc.), or GST. Confirm actual liability with your CA before paying advance tax or filing your ITR.
         </div>
 
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;">📈 MIS Income Monthly (Uploaded Excel/CSV)</div>
+            <button class="btn btn-ghost" onclick="goToMISUpload()" style="font-size:11px;">+ Upload MIS File</button>
+          </div>
+          <div id="misIncomeContainer"></div>
+        </div>
+
         <div class="rev-grid-2">
           <div class="rev-chart-card">
             <div class="rev-chart-title">📊 Income vs Expenses — Last 6 Months</div>
@@ -4806,6 +4818,23 @@
               <div id="aiProgressBar" style="height:100%;background:var(--gold);border-radius:4px;width:0%;transition:width 0.4s;"></div>
             </div>
             <div style="font-size:12px;color:var(--muted);margin-top:6px;" id="aiProgressSub"></div>
+          </div>
+
+          <div style="background:var(--bg);border-radius:10px;padding:14px;margin-top:14px;">
+            <div style="font-weight:700;font-size:13px;margin-bottom:8px;">📊 Latest Commission Grid</div>
+            <div id="commissionGridTable"></div>
+          </div>
+
+          <!-- MIS Income Monthly (Excel) Upload -->
+          <div style="margin-top:16px;">
+            <div class="ai-upload-card" id="misUploadZone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleMISDrop(event)">
+              <div style="font-size:28px;margin-bottom:8px;">📈</div>
+              <div style="font-weight:700;margin-bottom:4px;">MIS Income Monthly (Excel)</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Upload your monthly MIS income Excel/CSV → rows are read directly (no AI needed) → shown in Income, Expenses &amp; Tax</div>
+              <input type="file" id="misFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleMISFileSelect(event)">
+              <button class="btn btn-ghost" onclick="document.getElementById('misFileInput').click()">📂 Choose Excel / CSV</button>
+              <div class="ai-status-msg" id="misParseStatus">Ready</div>
+            </div>
           </div>
         </div>
 
@@ -5776,7 +5805,7 @@ const GROQ_KEY = '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';
 // ── 3. IndexedDB Local Storage (offline-first data layer) ────────────────
 // Stores all data locally → syncs to Supabase when online
 const IDB_NAME    = 'ng-finance-db';
-const IDB_VERSION = 9; // bumped — adds 'pdf_documents' store
+const IDB_VERSION = 10; // bumped — adds 'ai_parse_log', 'commission_grid', 'mis_income' stores
 let _idb = null;
 
 function openIDB() {
@@ -5807,7 +5836,8 @@ function _openIDBInternal() {
       // Delete any stores not in our list (clean slate on version bump)
       const wantedStores = ['commissions','portfolio_clients','sme_prospects',
         'vault_documents','lic_due_list','renewals','ai_reminders',
-        'monthly_summaries','tasks','planner_events','trash','journal_tasks','pipeline_leads','offline_queue','settings','expenses','pdf_documents'];
+        'monthly_summaries','tasks','planner_events','trash','journal_tasks','pipeline_leads','offline_queue','settings','expenses','pdf_documents',
+        'ai_parse_log','commission_grid','mis_income'];
       Array.from(db.objectStoreNames).forEach(name => {
         if (!wantedStores.includes(name)) {
           try { db.deleteObjectStore(name); } catch(er) {}
@@ -5832,6 +5862,9 @@ function _openIDBInternal() {
         { name: 'settings',          keyPath: 'key' },
         { name: 'expenses',          keyPath: 'id' }, // local-only — no Supabase table, never leaves this device unless exported
         { name: 'pdf_documents',     keyPath: 'id' },
+        { name: 'ai_parse_log',      keyPath: 'id' },
+        { name: 'commission_grid',   keyPath: 'id' }, // local-only — extracted from monthly Grid PDF uploads
+        { name: 'mis_income',        keyPath: 'id' }, // local-only — extracted from monthly MIS Income Excel uploads
       ];
       stores.forEach(s => {
         if (!db.objectStoreNames.contains(s.name)) {
@@ -6010,6 +6043,15 @@ async function smartDelete(table, id) {
   await idbDelete(table, id);
 }
 
+// Deletes every row in `table` for which predicate(row) is true — used to
+// replace a whole month's worth of rows (e.g. re-uploading a LIC PDF).
+async function smartDeleteWhere(table, predicate) {
+  const rows = await smartFetch(table);
+  const matches = rows.filter(predicate);
+  for (const r of matches) await smartDelete(table, r.id);
+  return matches.length;
+}
+
 // ── 6. Sync offline queue when back online ────────────────────────────────
 async function syncOfflineData() {
   if (!cloudSyncEnabled() || !navigator.onLine) return;
@@ -6149,7 +6191,8 @@ function copyAppsScriptSnippet() {
 // or take a full local backup on demand.
 // ══════════════════════════════════════════════════════════════════════════
 const DB_MANAGED_TABLES = ['commissions','portfolio_clients','sme_prospects',
-  'vault_documents','lic_due_list','renewals','tasks','planner_events','pipeline_leads','expenses','pdf_documents'];
+  'vault_documents','lic_due_list','renewals','tasks','planner_events','pipeline_leads','expenses','pdf_documents',
+  'ai_parse_log','commission_grid','mis_income'];
 
 async function refreshDBManager() {
   const statusBox = document.getElementById('dbManagerStatus');
@@ -6565,6 +6608,12 @@ window.addEventListener('online', () => {
 let _aiCallCount = 0;
 
 // ── Tab Switcher ─────────────────────────────────────────────────────────
+function goToMISUpload() {
+  const navEl = document.querySelector(".nav-item[onclick*=\"showSection('ai'\"]");
+  showSection('ai', navEl);
+  setTimeout(() => switchAITab('upload', document.getElementById('aiTab-upload')), 100);
+}
+
 function switchAITab(tab, el) {
   document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -6575,6 +6624,7 @@ function switchAITab(tab, el) {
   // Lazy-load content when tab opens
   if (tab === 'summary')  loadSummaryStats();
   if (tab === 'log')      loadAILog();
+  if (tab === 'upload')   renderCommissionGrid();
 }
 
 // ── Paste Text Parser ────────────────────────────────────────────────────
@@ -6703,17 +6753,63 @@ Extract key insurer rates and return a JSON array. Each object: {
 Extract all rows you can find. Return ONLY JSON array.`,
       pdfText.substring(0, 7000), 3000
     );
-    // Save to ai_parse_log
-    await getDB().from('ai_parse_log').insert([{
+
+    // Replace any previous grid extracted from the same file name (re-upload = refresh)
+    await smartDeleteWhere('commission_grid', r => r.source_pdf === fileName);
+    const uploadedAt = new Date().toISOString();
+    for (const r of rates) {
+      await smartInsert('commission_grid', {
+        insurer: r.insurer || '', plan: r.plan || 'All', si: r.si || '',
+        fresh: Number(r.fresh) || 0, port: Number(r.port) || 0,
+        renewal: Number(r.renewal) || 0, age60: Number(r.age60) || 0,
+        note: r.note || '', source_pdf: fileName, uploaded_at: uploadedAt
+      });
+    }
+
+    await smartInsert('ai_parse_log', {
       input_type: 'grid_pdf', input_preview: fileName,
-      records_saved: rates.length, model_used: GROQ_MODEL, status: 'done'
-    }]);
-    toast(`✅ Grid PDF processed — ${rates.length} rate rows extracted. Grid data noted for next update.`);
+      records_saved: rates.length, model_used: GROQ_MODEL, status: 'done',
+      created_at: uploadedAt
+    });
+    toast(`✅ Grid PDF processed — ${rates.length} rate rows saved`);
     if (statusEl) { statusEl.textContent = `✅ ${rates.length} rates extracted`; statusEl.className = 'ai-status-msg ok'; }
+    await renderCommissionGrid();
   } catch(e) {
     if (statusEl) { statusEl.textContent = '❌ Grid parse failed'; statusEl.className = 'ai-status-msg err'; }
     throw e;
   }
+}
+
+async function getCommissionGrid() {
+  const rows = await smartFetch('commission_grid', 'uploaded_at');
+  return rows.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+}
+
+async function renderCommissionGrid() {
+  const el = document.getElementById('commissionGridTable');
+  if (!el) return;
+  const rows = await getCommissionGrid();
+  if (rows.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">No commission grid uploaded yet.</div>';
+    return;
+  }
+  const latestFile = rows[0].source_pdf;
+  const latestRows = rows.filter(r => r.source_pdf === latestFile);
+  el.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">From "${latestFile}" · ${latestRows.length} rows</div>
+    <div style="max-height:260px;overflow-y:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="text-align:left;color:var(--muted);border-bottom:1px solid var(--border);">
+          <th style="padding:5px 6px;">Insurer</th><th>Plan</th><th>SI</th><th>Fresh%</th><th>Port%</th><th>Renewal%</th><th>60+%</th>
+        </tr></thead>
+        <tbody>
+          ${latestRows.map(r => `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:5px 6px;font-weight:600;">${r.insurer}</td><td>${r.plan}</td><td>${r.si}</td>
+            <td>${r.fresh}</td><td>${r.port}</td><td>${r.renewal}</td><td>${r.age60}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 // ── Load Summary Stats ────────────────────────────────────────────────────
@@ -6756,8 +6852,7 @@ async function loadSummaryStats() {
 
 // ── Load AI Log ───────────────────────────────────────────────────────────
 async function loadAILog() {
-  const { data } = await getDB().from('ai_parse_log')
-    .select('*').order('created_at', { ascending: false }).limit(20);
+  const data = (await smartFetch('ai_parse_log', 'created_at')).slice(0, 20);
   const container = document.getElementById('aiLogContainer');
   if (!container) return;
   if (!data || data.length === 0) {
@@ -6786,8 +6881,7 @@ async function updateDBRecordCount() {
     const tables = ['commissions','portfolio_clients','sme_prospects','lic_due_list','renewals','ai_reminders'];
     let total = 0;
     for (const t of tables) {
-      const { data } = await getDB().from(t).select('id');
-      total += (data || []).length;
+      total += (await smartFetch(t)).length;
     }
     const el = document.getElementById('totalDBRecords');
     if (el) el.textContent = total.toLocaleString('en-IN');
@@ -7424,6 +7518,135 @@ let pdfJsLoaded = false;
 // 📑 POLICY DOCUMENT VAULT — Complete rebuild
 // Purpose: Upload PDFs → AI extract → Store in Supabase → Retrieve via RAG
 // ══════════════════════════════════════════════════════════════════════════
+
+// ── SheetJS (xlsx) lazy loader — same pattern as loadPdfJs below ─────────
+function loadXlsxJs() {
+  return new Promise((resolve, reject) => {
+    if (window.XLSX) { resolve(); return; }
+    if (document.getElementById('xlsx-script')) {
+      const wait = () => { if (window.XLSX) resolve(); else setTimeout(wait, 100); };
+      wait(); return;
+    }
+    const s = document.createElement('script');
+    s.id = 'xlsx-script';
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => { if (window.XLSX) resolve(); else reject(new Error('XLSX not defined after load')); };
+    s.onerror = () => reject(new Error('XLSX library failed to load — check your internet connection'));
+    document.head.appendChild(s);
+  });
+}
+
+// Minimal CSV parser (no library needed) — handles quoted fields with commas
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length);
+  if (!lines.length) return [];
+  const splitRow = (line) => {
+    const out = []; let cur = ''; let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { out.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    out.push(cur);
+    return out.map(s => s.trim());
+  };
+  const headers = splitRow(lines[0]);
+  return lines.slice(1).map(line => {
+    const cells = splitRow(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h || ('col' + i)] = cells[i] !== undefined ? cells[i] : '');
+    return obj;
+  });
+}
+
+function handleMISFileSelect(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (file) processMISFile(file);
+}
+function handleMISDrop(event) {
+  event.preventDefault();
+  document.getElementById('misUploadZone')?.classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (file) processMISFile(file);
+}
+
+// ── MIS Income Monthly (Excel/CSV) — read directly, no AI needed ─────────
+async function processMISFile(file) {
+  const statusEl = document.getElementById('misParseStatus');
+  if (statusEl) { statusEl.textContent = '⏳ Reading file...'; statusEl.className = 'ai-status-msg busy'; }
+  try {
+    const ext = file.name.split('.').pop().toLowerCase();
+    let rows = [];
+    if (ext === 'csv') {
+      rows = parseCSV(await file.text());
+    } else {
+      await loadXlsxJs();
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+    }
+    if (!rows.length) throw new Error('No rows found in file');
+
+    // Heuristic: find a column that looks like an income/amount figure and sum it
+    const headers = Object.keys(rows[0]);
+    const amountCol = headers.find(h => /amount|income|total|premium|commission|revenue/i.test(h));
+    const total = amountCol
+      ? rows.reduce((s, r) => s + (parseFloat(String(r[amountCol]).replace(/[^0-9.-]/g, '')) || 0), 0)
+      : 0;
+
+    const uploadedAt = new Date().toISOString();
+    const month = new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+    // Re-uploading the same file name replaces the previous copy
+    await smartDeleteWhere('mis_income', r => r.source_file === file.name);
+    await smartInsert('mis_income', {
+      source_file: file.name, month, uploaded_at: uploadedAt,
+      row_count: rows.length, amount_column: amountCol || null, total,
+      rows: rows.slice(0, 500), // cap stored rows to keep records reasonably sized
+    });
+
+    if (statusEl) { statusEl.textContent = `✅ ${rows.length} rows saved` + (amountCol ? ` · ₹${Math.round(total).toLocaleString('en-IN')}` : ''); statusEl.className = 'ai-status-msg ok'; }
+    toast(`✅ MIS Income file processed — ${rows.length} rows`);
+    await renderMISIncome();
+  } catch (e) {
+    if (statusEl) { statusEl.textContent = '❌ ' + e.message; statusEl.className = 'ai-status-msg err'; }
+    toast('❌ MIS file processing failed: ' + e.message, 'error');
+  }
+}
+
+async function getMISIncome() {
+  const rows = await smartFetch('mis_income', 'uploaded_at');
+  return rows.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+}
+
+async function deleteMISIncome(id) {
+  if (!confirm('Delete this MIS income upload?')) return;
+  await smartDelete('mis_income', id);
+  toast('🗑️ Deleted', 'warn');
+  await renderMISIncome();
+}
+
+async function renderMISIncome() {
+  const el = document.getElementById('misIncomeContainer');
+  if (!el) return;
+  const uploads = await getMISIncome();
+  if (uploads.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:10px 0;">No MIS income files uploaded yet. Upload one from 🤖 AI Command Center → Upload panel.</div>';
+    return;
+  }
+  el.innerHTML = uploads.map(u => `
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <div>
+        <div style="font-weight:700;font-size:13px;">${u.source_file}</div>
+        <div style="font-size:11px;color:var(--muted);">${u.month} · ${u.row_count} rows · uploaded ${new Date(u.uploaded_at).toLocaleDateString('en-IN')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        ${u.amount_column ? `<div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:var(--gold);">₹${Math.round(u.total).toLocaleString('en-IN')}</div>` : '<div style="font-size:11px;color:var(--muted);">No amount column detected</div>'}
+        <button onclick="deleteMISIncome('${u.id}')" style="font-size:11px;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--urgent);cursor:pointer;">✕</button>
+      </div>
+    </div>`).join('');
+}
 
 // ── PDF.js lazy loader ────────────────────────────────────────────────────
 function loadPdfJs() {
@@ -8870,7 +9093,7 @@ function showSection(s, el) {
   if (s === 'trash')     { setTimeout(renderTrash, 50); }
   if (s === 'journal')   { setTimeout(renderJournal, 50); }
   if (s === 'pipeline')  { setTimeout(renderPipeline, 50); }
-  if (s === 'expenses')  { setTimeout(renderExpenses, 50); }
+  if (s === 'expenses')  { setTimeout(renderExpenses, 50); setTimeout(renderMISIncome, 50); }
   if (s === 'vault')     { setTimeout(renderFolderSyncPanel, 50); setTimeout(() => syncWatchedFolder(false), 100); }
   if (s === 'thinktank') { setTimeout(initThinkTank, 50); setTimeout(_loadTTChecklistState, 100); }
   if (s === 'ragchat' && typeof ragLoadContext === 'function' && !_ragContext) { setTimeout(ragLoadContext, 150); }
@@ -10596,9 +10819,8 @@ let _realtimeChannels = [];
 let _licDBData = []; // cached from DB, fallback to static licData
 
 async function getLICFromDB() {
-  const { data, error } = await getDB().from('lic_due_list')
-    .select('*').order('fup', { ascending: true });
-  if (error || !data || data.length === 0) return null; // fall back to static
+  const data = await smartFetch('lic_due_list', 'fup');
+  if (!data || data.length === 0) return null; // fall back to static
   return data.map(r => ({
     sno: r.id, policy: r.policy_no, name: r.name, doc: r.doc_date,
     plan: r.plan, mod: r.mod, fup: r.fup, flg: r.flg || '',
@@ -11085,16 +11307,17 @@ Return ONLY the JSON array, no explanation.`,
       source_pdf: fileName
     }));
 
-    // Clear old entries for this month, then insert fresh
-    await getDB().from('lic_due_list').delete().eq('month', month);
-    const { error } = await getDB().from('lic_due_list').insert(dbRows);
-    if (error) throw error;
+    // Clear old entries for this month, then insert fresh — works fully
+    // offline/local-only, no Supabase/network required.
+    await smartDeleteWhere('lic_due_list', r => r.month === month);
+    for (const row of dbRows) await smartInsert('lic_due_list', row);
 
     // Log it
-    await getDB().from('ai_parse_log').insert([{
+    await smartInsert('ai_parse_log', {
       input_type: 'lic_pdf', input_preview: fileName,
-      records_saved: rows.length, model_used: GROQ_MODEL, status: 'done'
-    }]);
+      records_saved: rows.length, model_used: GROQ_MODEL, status: 'done',
+      created_at: new Date().toISOString()
+    });
 
     if (statusEl) statusEl.textContent = `✅ ${rows.length} policies saved from ${fileName}`;
     toast(`✅ AI extracted ${rows.length} LIC policies → saved to database`);
@@ -11135,59 +11358,61 @@ Return ONLY the JSON array.`,
       return;
     }
 
-    // Save based on section
+    // Save based on section — local-first, works offline/without Supabase
     let saved = 0;
     if (targetSection === 'commission') {
       for (const r of rows) {
-        const { error } = await getDB().from('commissions').insert([{
+        await smartInsert('commissions', {
           client: r.client || '', insurer: r.insurer || '',
-          product: r.product || '', amount: r.amount || 0,
+          product: r.product || '', expected: r.amount || 0,
           due_date: r.due_date || new Date().toISOString().split('T')[0],
-          status: r.status || 'pending'
-        }]);
-        if (!error) saved++;
+          status: r.status || 'pending', received: 0,
+          created_at: new Date().toISOString()
+        });
+        saved++;
       }
       await renderCommissions();
     } else if (targetSection === 'renewal') {
       for (const r of rows) {
-        const { error } = await getDB().from('renewals').insert([{
+        await smartInsert('renewals', {
           client_name: r.client_name || '', type: r.type || 'health',
           insurer: r.insurer || '', policy_no: r.policy_no || '',
           premium: r.premium || 0, renewal_date: r.renewal_date,
-          sum_insured: r.sum_insured || 0
-        }]);
-        if (!error) saved++;
+          sum_insured: r.sum_insured || 0, created_at: new Date().toISOString()
+        });
+        saved++;
       }
     } else if (targetSection === 'portfolio') {
       for (const r of rows) {
-        const { error } = await getDB().from('portfolio_clients').insert([{
+        await smartInsert('portfolio_clients', {
           name: r.name || '', phone: r.phone || '', email: r.email || '',
           insurer: r.insurer || '', policy_no: r.policy_no || '',
           sum_assured: r.sum_assured || 0, premium: r.premium || 0,
-          policy_type: r.policy_type || 'health'
-        }]);
-        if (!error) saved++;
+          policy_type: r.policy_type || 'health', created_at: new Date().toISOString()
+        });
+        saved++;
       }
       await renderPortfolio();
     } else if (targetSection === 'lic') {
       for (const r of rows) {
-        const { error } = await getDB().from('lic_due_list').insert([{
+        await smartInsert('lic_due_list', {
           policy_no: r.policy_no || '', name: r.name || '',
           plan: r.plan || '', mod: r.mod || '', fup: r.fup || '',
           inst_prem: r.inst_prem || 0, total_prem: r.total_prem || 0,
           est_comm: r.est_comm || 0, due_count: 1,
           month: r.fup || '', called: false
-        }]);
-        if (!error) saved++;
+        });
+        saved++;
       }
       await renderLICFromDB();
     }
 
-    await getDB().from('ai_parse_log').insert([{
+    await smartInsert('ai_parse_log', {
       input_type: 'pasted_text_' + targetSection,
       input_preview: text.substring(0, 100),
-      records_saved: saved, model_used: GROQ_MODEL, status: 'done'
-    }]);
+      records_saved: saved, model_used: GROQ_MODEL, status: 'done',
+      created_at: new Date().toISOString()
+    });
 
     if (statusEl) statusEl.textContent = `✅ ${saved} records saved`;
     toast(`✅ AI extracted ${saved} records → saved to database`);
@@ -11350,6 +11575,8 @@ window.addEventListener('load', async () => {
   await safeRender(renderGrowthIntel, 'renderGrowthIntel');
   await safeRender(renderVault, 'renderVault');
   await safeRender(renderVaultStats, 'renderVaultStats');
+  await safeRender(renderCommissionGrid, 'renderCommissionGrid');
+  await safeRender(renderMISIncome, 'renderMISIncome');
   syncWatchedFolder(false); // silent — only runs if folder access is already granted from a prior session
   initBioLockScreen();
 
